@@ -1,0 +1,32 @@
+title Subscribe message
+
+participantgroup #lightblue **Region A**
+participant App
+participant Backend
+participant Sub Node A
+database DB
+end
+
+entryspacing 1
+
+group Precondition
+Sub Node A<#steelblue-]: SyncMessage()
+activecolor #steelblue
+activate Sub Node A
+end
+
+entryspacing 0.01
+
+App-#violet>Backend: SubscribeMessage()
+activecolor #violet
+activate App
+activate Backend
+Backend-#lightgreen>Sub Node A: SubscribeMessage()
+activecolor #lightgreen
+activate Backend
+activate Sub Node A
+
+Sub Node A<#steelblue-]:stream.add(\n  SyncMessageRequest{}\n)
+Sub Node A->DB: INSERT
+Sub Node A-#lightgreen>Backend:stream.add(\n  SubscribeMessageResponse{}\n)
+Backend-#violet>App:stream.add(\n  SubscribeMessageResponse{}\n)

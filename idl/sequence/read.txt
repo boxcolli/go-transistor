@@ -1,0 +1,12 @@
+title Read message: From local archive
+
+participantgroup #lightblue **Region A**
+participant App
+participant Backend
+database DB
+end
+
+App->Backend: ReadMessage()
+Backend->DB: SELECT
+DB->Backend: result
+Backend->App: ReadMessageResponse{}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package obj.v1;
+
+option go_package = "./pb";
+
+message Msg {
+    bytes chat_id = 1;
+    bytes msg_id = 2;
+    bytes user_id = 3;
+    bytes type = 4;
+    string content = 5;
+}

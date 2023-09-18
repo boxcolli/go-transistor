@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package sub.v1;
+
+option go_package = "./pb";
+
+import "obj/v1/obj.proto";
+import "google/protobuf/timestamp.proto";
+
+service SubService {
+    rpc SyncMessage(SyncMessageRequest) returns (SyncMessageResponse) {}
+    rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse) {}
+}
+
+message SyncMessageRequest {
+    google.protobuf.Timestamp timestamp = 1;
+    obj.v1.Msg msg = 2;
+}
+message SyncMessageResponse {}
+
+message SubscribeMessageRequest {
+    bytes chat_id = 1;
+}
+message SubscribeMessageResponse {
+    obj.v1.Msg msg = 1;
+}

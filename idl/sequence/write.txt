@@ -1,0 +1,36 @@
+title Write message: Sync data globally
+
+entryspacing 1.1
+participantgroup #lightblue **Region A**
+participant App
+participant Backend
+participant Pub Node A
+participant Sub Node A
+database DB A
+end
+participantgroup #lightgrey **Region B**
+participant Sub Node B
+database DB B
+end
+
+entryspacing 1
+
+group Precondition
+Pub Node A-#steelblue>Sub Node A: SyncMessage()
+activecolor #steelblue
+activate Pub Node A
+activate Sub Node A
+Pub Node A-#steelblue>Sub Node B: SyncMessage()
+activate Pub Node A
+activate Sub Node B
+end
+
+entryspacing 0.01
+
+
+App->Backend: WriteMessage()
+Backend->Pub Node A: WriteMessage()
+Pub Node A-#steelblue>Sub Node A:stream.add(\n  SyncMessageRequest{}\n)
+Sub Node A->DB A: INSERT
+Pub Node A-#steelblue>Sub Node B:stream.add(\n  SyncMessageRequest{}\n)
+Sub Node B->DB B: INSERT

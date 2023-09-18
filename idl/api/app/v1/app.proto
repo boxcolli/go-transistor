@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package app.v1;
+
+option go_package = "./pb";
+
+import "obj/v1/obj.proto";
+import "google/protobuf/timestamp.proto";
+
+service AppService {
+    rpc WriteMessage(WriteMessageRequest) returns (WriteMessageResponse) {}
+    rpc ReadMessageWithPage(ReadMessageWithPageRequest) returns (ReadMessageWithPageResponse) {}
+    rpc ReadMessageWithTime(ReadMessageWithTimeRequest) returns (ReadMessageWithTimeResponse) {}
+    rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse) {}
+}
+
+message WriteMessageRequest {
+    obj.v1.Msg msg = 1;
+}
+message WriteMessageResponse {}
+
+message ReadMessageWithPageRequest {
+    bytes user_id = 1;
+    bytes chat_id = 2;
+    int32 offset = 3;
+}
+message ReadMessageWithPageResponse {
+    repeated obj.v1.Msg msg = 1;
+}
+
+message ReadMessageWithTimeRequest {
+    bytes user_id = 1;
+    bytes chat_id = 2;
+    google.protobuf.Timestamp offset = 3;
+}
+message ReadMessageWithTimeResponse {
+    repeated obj.v1.Msg msg = 1;
+}
+
+message SubscribeMessageRequest{
+    bytes uid = 1;
+    bytes chat_id = 2;
+}
+message SubscribeMessageResponse{
+    obj.v1.Msg msg = 1;
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pub.v1;
+
+option go_package = "./pb";
+
+import "obj/v1/obj.proto";
+import "google/protobuf/timestamp.proto";
+
+service PubService {
+    rpc WriteMessage(WriteMessageRequest) returns (WriteMessageResponse) {}
+}
+
+message WriteMessageRequest {
+    google.protobuf.Timestamp timestamp = 1;
+    obj.v1.Msg msg = 2;
+}
+message WriteMessageResponse {}

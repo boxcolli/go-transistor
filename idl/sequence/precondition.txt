@@ -1,0 +1,31 @@
+title Precondition: Establish stream connection
+
+participantgroup #lightblue **Region A**
+participant Pub Node A
+participant Sub Node A
+participant ..
+end
+participantgroup #lightgrey **Region B**
+participant Sub Node B
+participant Pub Node B
+participant ...
+end
+
+destroysilent ..
+destroysilent ...
+
+
+Pub Node A-#steelblue>Sub Node A: SyncMessage()
+activecolor #steelblue
+activate Pub Node A
+activate Sub Node A
+Pub Node A-#steelblue>Sub Node B: SyncMessage()
+activate Pub Node A
+activate Sub Node B
+Pub Node B-#grey>Sub Node B: SyncMessage()
+activecolor #grey
+activate Pub Node B
+activate Sub Node B
+Pub Node B-#grey>Sub Node A: SyncMessage()
+activate Pub Node B
+activate Sub Node A
