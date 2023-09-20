@@ -4,15 +4,17 @@ package pub.v1;
 
 option go_package = "./pb";
 
-import "obj/v1/obj.proto";
-import "google/protobuf/timestamp.proto";
+// import "obj/v1/obj.proto";
+// import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
 service PubService {
-    rpc WriteMessage(WriteMessageRequest) returns (WriteMessageResponse) {}
+    rpc PushMessage(PushMessageRequest) returns (PushMessageResponse) {}
 }
 
-message WriteMessageRequest {
-    google.protobuf.Timestamp timestamp = 1;
-    obj.v1.Msg msg = 2;
+message PushMessageRequest {
+    string topic = 1;
+    bytes topic_id = 2;
+    google.protobuf.Any data = 3;
 }
-message WriteMessageResponse {}
+message PushMessageResponse {}

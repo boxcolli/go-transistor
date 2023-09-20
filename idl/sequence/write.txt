@@ -16,11 +16,11 @@ end
 entryspacing 1
 
 group Precondition
-Pub Node A-#steelblue>Sub Node A: SyncMessage()
+Pub Node A-#steelblue>Sub Node A:SendMessage()
 activecolor #steelblue
 activate Pub Node A
 activate Sub Node A
-Pub Node A-#steelblue>Sub Node B: SyncMessage()
+Pub Node A-#steelblue>Sub Node B:SendMessage()
 activate Pub Node A
 activate Sub Node B
 end
@@ -28,9 +28,9 @@ end
 entryspacing 0.01
 
 
-App->Backend: WriteMessage()
-Backend->Pub Node A: WriteMessage()
-Pub Node A-#steelblue>Sub Node A:stream.add(\n  SyncMessageRequest{}\n)
+App->Backend:WriteChatMessage()
+Backend->Pub Node A:PushMessage()
+Pub Node A-#steelblue>Sub Node A:stream.add(\n  SendMessageRequest{}\n)
 Sub Node A->DB A: INSERT
-Pub Node A-#steelblue>Sub Node B:stream.add(\n  SyncMessageRequest{}\n)
+Pub Node A-#steelblue>Sub Node B:stream.add(\n  SendMessageRequest{}\n)
 Sub Node B->DB B: INSERT

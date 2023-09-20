@@ -15,17 +15,17 @@ destroysilent ..
 destroysilent ...
 
 
-Pub Node A-#steelblue>Sub Node A: SyncMessage()
+Pub Node A-#steelblue>Sub Node A: SendMessage()
 activecolor #steelblue
 activate Pub Node A
 activate Sub Node A
-Pub Node A-#steelblue>Sub Node B: SyncMessage()
+Pub Node A-#steelblue>Sub Node B: SendMessage()
 activate Pub Node A
 activate Sub Node B
-Pub Node B-#grey>Sub Node B: SyncMessage()
+Pub Node B-#grey>Sub Node B: SendMessage()
 activecolor #grey
 activate Pub Node B
 activate Sub Node B
-Pub Node B-#grey>Sub Node A: SyncMessage()
+Pub Node B-#grey>Sub Node A: SendMessage()
 activate Pub Node B
 activate Sub Node A

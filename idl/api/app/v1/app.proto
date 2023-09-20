@@ -4,43 +4,50 @@ package app.v1;
 
 option go_package = "./pb";
 
-import "obj/v1/obj.proto";
 import "google/protobuf/timestamp.proto";
 
+message ChatMessage {
+    bytes chat_id = 1;
+    bytes msg_id = 2;
+    bytes user_id = 3;
+    bytes type = 4;
+    string content = 5;
+}
+
 service AppService {
-    rpc WriteMessage(WriteMessageRequest) returns (WriteMessageResponse) {}
-    rpc ReadMessageWithPage(ReadMessageWithPageRequest) returns (ReadMessageWithPageResponse) {}
-    rpc ReadMessageWithTime(ReadMessageWithTimeRequest) returns (ReadMessageWithTimeResponse) {}
-    rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse) {}
+    rpc WriteChatMessage(WriteChatMessageRequest) returns (WriteChatMessageResponse) {}
+    rpc ReadChatMessageWithPage(ReadChatMessageWithPageRequest) returns (ReadChatMessageWithPageResponse) {}
+    rpc ReadChatMessageWithTime(ReadChatMessageWithTimeRequest) returns (ReadChatMessageWithTimeResponse) {}
+    rpc SubscribeChat(SubscribeChatRequest) returns (stream SubscribeChatResponse) {}
 }
 
-message WriteMessageRequest {
-    obj.v1.Msg msg = 1;
+message WriteChatMessageRequest {
+    ChatMessage msg = 1;
 }
-message WriteMessageResponse {}
+message WriteChatMessageResponse {}
 
-message ReadMessageWithPageRequest {
+message ReadChatMessageWithPageRequest {
     bytes user_id = 1;
     bytes chat_id = 2;
     int32 offset = 3;
 }
-message ReadMessageWithPageResponse {
-    repeated obj.v1.Msg msg = 1;
+message ReadChatMessageWithPageResponse {
+    repeated ChatMessage msg = 1;
 }
 
-message ReadMessageWithTimeRequest {
+message ReadChatMessageWithTimeRequest {
     bytes user_id = 1;
     bytes chat_id = 2;
     google.protobuf.Timestamp offset = 3;
 }
-message ReadMessageWithTimeResponse {
-    repeated obj.v1.Msg msg = 1;
+message ReadChatMessageWithTimeResponse {
+    repeated ChatMessage msg = 1;
 }
 
-message SubscribeMessageRequest{
-    bytes uid = 1;
+message SubscribeChatRequest{
+    bytes user_id = 1;
     bytes chat_id = 2;
 }
-message SubscribeMessageResponse{
-    obj.v1.Msg msg = 1;
+message SubscribeChatResponse{
+    ChatMessage msg = 1;
 }

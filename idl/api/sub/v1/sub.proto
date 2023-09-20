@@ -4,23 +4,26 @@ package sub.v1;
 
 option go_package = "./pb";
 
-import "obj/v1/obj.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
 service SubService {
-    rpc SyncMessage(SyncMessageRequest) returns (SyncMessageResponse) {}
-    rpc SubscribeMessage(SubscribeMessageRequest) returns (stream SubscribeMessageResponse) {}
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
+    rpc SubscribeTopic(SubscribeTopicRequest) returns (stream SubscribeTopicResponse) {}
 }
 
-message SyncMessageRequest {
-    google.protobuf.Timestamp timestamp = 1;
-    obj.v1.Msg msg = 2;
+message SendMessageRequest {
+    string topic = 1;
+    bytes topic_id = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    google.protobuf.Any data = 4;
 }
-message SyncMessageResponse {}
+message SendMessageResponse {}
 
-message SubscribeMessageRequest {
-    bytes chat_id = 1;
+message SubscribeTopicRequest {
+    string topic = 1;
+    bytes topic_id = 2;
 }
-message SubscribeMessageResponse {
-    obj.v1.Msg msg = 1;
+message SubscribeTopicResponse {
+    google.protobuf.Any data = 1;
 }

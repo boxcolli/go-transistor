@@ -3,30 +3,33 @@ title Subscribe message
 participantgroup #lightblue **Region A**
 participant App
 participant Backend
-participant Sub Node A
+participant Sub Node
 database DB
 end
 
 entryspacing 1
 
 group Precondition
-Sub Node A<#steelblue-]: SyncMessage()
+Sub Node<#steelblue-]:SendData()
 activecolor #steelblue
-activate Sub Node A
+activate Sub Node
 end
 
 entryspacing 0.01
 
-App-#violet>Backend: SubscribeMessage()
+App-#violet>Backend:SubscribeChat()
 activecolor #violet
 activate App
 activate Backend
-Backend-#lightgreen>Sub Node A: SubscribeMessage()
+Backend-#lightgreen>Sub Node: SubscribeTopic()
 activecolor #lightgreen
 activate Backend
-activate Sub Node A
+activate Sub Node
 
-Sub Node A<#steelblue-]:stream.add(\n  SyncMessageRequest{}\n)
-Sub Node A->DB: INSERT
-Sub Node A-#lightgreen>Backend:stream.add(\n  SubscribeMessageResponse{}\n)
-Backend-#violet>App:stream.add(\n  SubscribeMessageResponse{}\n)
+space
+rbox over Sub Node: New message
+
+Sub Node<#steelblue-]:stream.add(\n  SendDataRequest{}\n)
+Sub Node->DB: INSERT
+Sub Node-#lightgreen>Backend:stream.add(\n  SubscribeTopicResponse{}\n)
+Backend-#violet>App:stream.add(\n  SubscribeChatResponse{}\n)

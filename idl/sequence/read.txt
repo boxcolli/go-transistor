@@ -6,7 +6,7 @@ participant Backend
 database DB
 end
 
-App->Backend: ReadMessage()
+App->Backend: ReadChatMessage()
 Backend->DB: SELECT
 DB->Backend: result
-Backend->App: ReadMessageResponse{}
+Backend->App: ReadChatMessageResponse{}
