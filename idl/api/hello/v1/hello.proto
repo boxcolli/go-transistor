@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package hello.v1;
+
+option go_package = "./pb";
+
+// import "obj/v1/obj.proto";
+// import "google/protobuf/timestamp.proto";
+
+message Hello {
+    bytes id = 1;
+    string name = 2;
+}

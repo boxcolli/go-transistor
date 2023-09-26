@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package link.v1;
+
+option go_package = "./pb";
+
+// import "obj/v1/obj.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+message Entity {
+    bytes id = 1;   // any length that ensures uniqueness within current network level
+    int32 role = 2;
+    string addr = 3;    // full grpc address with port
+}
+
+service LinkService {
+    rpc GetLevelRange(GetLevelRangeRequest) returns (GetLevelRangeResponse) {}
+    rpc GetTopology(GetTopologyRequest) returns (GetTopologyResponse) {}
+    rpc Join(JoinRequest) returns (JoinResponse) {}
+    rpc Subscribe(stream SubscribeRequest) returns (stream SubscribeResponse) {} // Subscriber approaches Publisher
+}
+
+message GetLevelRangeRequest {}
+message GetLevelRangeResponse {
+    int32 start = 1;
+    int32 end = 2;
+}
+
+message GetTopologyRequest {
+    int32 level = 1;
+}
+
+message GetTopologyResponse {
+    repeated Entity entities = 1;   // list
+}
+
+message JoinRequest {
+    int32 level = 1;    // 0: Same network tree level of current node
+    int32 role = 2;     // 0: publisher, 1: subscriber
+}
+
+message JoinResponse {
+    repeated Entity entities = 1;   // list
+}
+
+message SubscribeRequest {
+    repeated string topics = 1;
+}
+
+message SubscribeResponse {
+    string  topic = 1;
+    bytes   topic_id = 2;
+    google.protobuf.Any data = 3;
+    google.protobuf.Timestamp timestamp = 4;
+}

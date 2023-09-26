@@ -9,12 +9,12 @@ option go_package = "./pb";
 import "google/protobuf/any.proto";
 
 service PubService {
-    rpc PushMessage(PushMessageRequest) returns (PushMessageResponse) {}
+    rpc Publish(PublishRequest) returns (PublishResponse) {}
 }
 
-message PushMessageRequest {
+message PublishRequest {
     string topic = 1;
     bytes topic_id = 2;
     google.protobuf.Any data = 3;
 }
-message PushMessageResponse {}
+message PublishResponse {}
