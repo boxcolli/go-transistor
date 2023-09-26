@@ -19,6 +19,6 @@ func (s *mysqlSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewMySQLSink(opt sinks.SinkOption) sinks.Sink {
+func NewMySQLSink(conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
 	return &mysqlSink{}
 }
