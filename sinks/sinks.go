@@ -12,8 +12,9 @@ type SinkOption struct {
 	createTopicTable bool
 }
 
-type MessageInterpreter interface {
-	MessageToSchema(msg interface{}) interface{}
+type MessageConverter interface {
+	MessageToSchema(topic string, msg interface{}) interface{}
+ SchemaToMessage(topic string, schema interface{}) interface{}
 }
 
 /*
