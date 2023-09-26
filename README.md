@@ -1,2 +1,2 @@
-# pepperchat
- Full Chat app backend system
+# pepperlink
+  distributed pubsub system with sink and realtime subscription
