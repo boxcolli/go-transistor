@@ -6,6 +6,7 @@ import (
 )
 
 type mysqlSink struct {
+ conv sinks.MessageConverter
 	opt sinks.SinkOption
 }
 
@@ -20,5 +21,8 @@ func (s *mysqlSink) Delete(topic string, topicId []byte) error {
 }
 
 func NewMySQLSink(conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
-	return &mysqlSink{}
+	return &mysqlSink{
+  conv: conv,
+  opt: opt,
+ }
 }
