@@ -6,6 +6,7 @@ import (
 )
 
 type boltSink struct {
+ conv sinks.MessageConverter
 	opt sinks.SinkOption
 	
 }
@@ -20,8 +21,9 @@ func (s *boltSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewBoltSink(opt sinks.SinkOption) sinks.Sink {
+func NewBoltSink(conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
 	return &boltSink{
+  conv: conv,
 		opt: opt,
 	}
 }
