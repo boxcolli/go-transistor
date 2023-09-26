@@ -7,6 +7,7 @@ import (
 
 type boltSink struct {
 	opt sinks.SinkOption
+	
 }
 
 // Write implements sinks.Sink.

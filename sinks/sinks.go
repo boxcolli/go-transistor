@@ -12,6 +12,10 @@ type SinkOption struct {
 	createTopicTable bool
 }
 
+type MessageInterpreter interface {
+	MessageToSchema(msg interface{}) interface{}
+}
+
 /*
 Topic validator:
 	데이터를 저장할 때 토픽에 해당하는 테이블이 없으면 치명적이다.
