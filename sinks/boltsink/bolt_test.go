@@ -1,4 +1,4 @@
-package boltsink_test
+package boltsink
 
 import (
 	"testing"
