@@ -1,11 +1,14 @@
 package bolt
 
 import (
-	"github.com/boxcolli/pepperlink/wal"
 	"time"
+
+	"github.com/boxcolli/pepperlink/wal"
+	"github.com/boltdb/bolt"
 )
 
 type boltWAL struct {
+	db *bolt.DB
 }
 
 // Flush implements wal.WAL.
@@ -18,6 +21,8 @@ func (*boltWAL) Push(topic string, topicId []byte, msg []byte, timestamp time.Ti
 	panic("unimplemented")
 }
 
-func NewBoltWAL() wal.WAL {
-	return &boltWAL{}
+func NewBoltWAL(db *bolt.DB) wal.WAL {
+	return &boltWAL{
+		db: db,
+	}
 }

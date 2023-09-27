@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	PubService_PushMessage_FullMethodName = "/pub.v1.PubService/PushMessage"
+	PubService_Publish_FullMethodName = "/pub.v1.PubService/Publish"
 )
 
 // PubServiceClient is the client API for PubService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PubServiceClient interface {
-	PushMessage(ctx context.Context, in *PushMessageRequest, opts ...grpc.CallOption) (*PushMessageResponse, error)
+	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error)
 }
 
 type pubServiceClient struct {
@@ -37,9 +37,9 @@ func NewPubServiceClient(cc grpc.ClientConnInterface) PubServiceClient {
 	return &pubServiceClient{cc}
 }
 
-func (c *pubServiceClient) PushMessage(ctx context.Context, in *PushMessageRequest, opts ...grpc.CallOption) (*PushMessageResponse, error) {
-	out := new(PushMessageResponse)
-	err := c.cc.Invoke(ctx, PubService_PushMessage_FullMethodName, in, out, opts...)
+func (c *pubServiceClient) Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error) {
+	out := new(PublishResponse)
+	err := c.cc.Invoke(ctx, PubService_Publish_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *pubServiceClient) PushMessage(ctx context.Context, in *PushMessageReque
 // All implementations must embed UnimplementedPubServiceServer
 // for forward compatibility
 type PubServiceServer interface {
-	PushMessage(context.Context, *PushMessageRequest) (*PushMessageResponse, error)
+	Publish(context.Context, *PublishRequest) (*PublishResponse, error)
 	mustEmbedUnimplementedPubServiceServer()
 }
 
@@ -58,8 +58,8 @@ type PubServiceServer interface {
 type UnimplementedPubServiceServer struct {
 }
 
-func (UnimplementedPubServiceServer) PushMessage(context.Context, *PushMessageRequest) (*PushMessageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushMessage not implemented")
+func (UnimplementedPubServiceServer) Publish(context.Context, *PublishRequest) (*PublishResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedPubServiceServer) mustEmbedUnimplementedPubServiceServer() {}
 
@@ -74,20 +74,20 @@ func RegisterPubServiceServer(s grpc.ServiceRegistrar, srv PubServiceServer) {
 	s.RegisterService(&PubService_ServiceDesc, srv)
 }
 
-func _PubService_PushMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PushMessageRequest)
+func _PubService_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PubServiceServer).PushMessage(ctx, in)
+		return srv.(PubServiceServer).Publish(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PubService_PushMessage_FullMethodName,
+		FullMethod: PubService_Publish_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PubServiceServer).PushMessage(ctx, req.(*PushMessageRequest))
+		return srv.(PubServiceServer).Publish(ctx, req.(*PublishRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,8 +100,8 @@ var PubService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PubServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PushMessage",
-			Handler:    _PubService_PushMessage_Handler,
+			MethodName: "Publish",
+			Handler:    _PubService_Publish_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

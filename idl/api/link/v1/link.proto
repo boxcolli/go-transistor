@@ -9,8 +9,8 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
 message Entity {
-    bytes id = 1;   // any length that ensures uniqueness within current network level
-    int32 role = 2;
+    bytes id = 1;        // any length that ensures uniqueness within current network level
+    int32 role = 2;     // 0: publisher, 1: subscriber, 2?: hybrid
     string addr = 3;    // full grpc address with port
 }
 
@@ -36,8 +36,8 @@ message GetTopologyResponse {
 }
 
 message JoinRequest {
-    int32 level = 1;    // 0: Same network tree level of current node
-    int32 role = 2;     // 0: publisher, 1: subscriber
+    int32 level = 1;    // This is not a global network level. 0: Same network tree level of current node
+    int32 role = 2;     
 }
 
 message JoinResponse {

@@ -2,8 +2,15 @@ package mysql
 
 import (
 	"testing"
+
+	pb "github.com/boxcolli/pepperlink/idl/gen/hello/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	// "github.com/stretchr/testify/assert"
 )
 
 func TestMySQLSink(t *testing.T) {
-	// sink := NewMySQLSink()
+	msg := pb.Hello{
+		Name: "Alice",
+	}
+	t.Log(protojson.Marshal(&msg))
 }

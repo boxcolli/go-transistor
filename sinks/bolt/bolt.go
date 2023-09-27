@@ -1,14 +1,16 @@
 package bolt
 
 import (
-	"github.com/boxcolli/pepperlink/sinks"
 	"time"
+
+	"github.com/boxcolli/pepperlink/sinks"
+	"github.com/boltdb/bolt"
 )
 
 type boltSink struct {
- conv sinks.MessageConverter
-	opt sinks.SinkOption
-	
+	dbs		[]*bolt.DB
+	conv	sinks.MessageConverter
+	opt		sinks.SinkOption
 }
 
 // Write implements sinks.Sink.
@@ -21,9 +23,10 @@ func (s *boltSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewBoltSink(conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
+func NewBoltSink(dbs []*bolt.DB, conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
 	return &boltSink{
-  conv: conv,
+		dbs: dbs,
+  		conv: conv,
 		opt: opt,
 	}
 }

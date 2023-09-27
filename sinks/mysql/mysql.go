@@ -1,13 +1,17 @@
 package mysql
 
 import (
-	"github.com/boxcolli/pepperlink/sinks"
+	"database/sql"
 	"time"
+
+	"github.com/boxcolli/pepperlink/sinks"
 )
 
 type mysqlSink struct {
- conv sinks.MessageConverter
-	opt sinks.SinkOption
+	db		*sql.DB
+	conv	sinks.MessageConverter
+	val		sinks.TopicTableValidator
+	opt		sinks.SinkOption
 }
 
 // Write implements sinks.Sink.
@@ -20,9 +24,11 @@ func (s *mysqlSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewMySQLSink(conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
+func NewMySQLSink(db *sql.DB, conv sinks.MessageConverter, val sinks.TopicTableValidator, opt sinks.SinkOption) sinks.Sink {
 	return &mysqlSink{
-  conv: conv,
-  opt: opt,
- }
+		db: db,
+		conv: conv,
+		val: val,
+		opt: opt,
+ 	}
 }
