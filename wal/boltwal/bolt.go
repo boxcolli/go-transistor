@@ -1,4 +1,4 @@
-package bolt
+package boltwal
 
 import (
 	"time"

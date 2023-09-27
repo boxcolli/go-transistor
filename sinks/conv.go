@@ -16,7 +16,6 @@ type SqlMessageConverter struct {
 func (m *SqlMessageConverter) MessageToSchema(topic string, msg interface{}) (string, error) {
 	// receive protobuf message, convert it into string
 	return m.mtos[topic](msg)
-	// panic("unimplemented")
 }
 
 func NewSQLMessageConverter(mtos map[string]func(interface{}) (string, error)) *SqlMessageConverter {

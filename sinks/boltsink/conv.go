@@ -16,7 +16,6 @@ type boltMessageConverter struct {
 func (m *boltMessageConverter) MessageToSchema(topic string, msg interface{}) ([]byte, error) {
 	// receive protobuf message, convert it into string
 	return m.mtos[topic](msg)
-	// panic("unimplemented")
 }
 
 func NewBoltMessageConverter(mtos map[string]func(interface{}) ([]byte, error)) sinks.MessageConverter[interface{}, []byte] {
