@@ -1,4 +1,4 @@
-package bolt
+package boltsink
 
 import (
 	"time"
@@ -9,7 +9,7 @@ import (
 
 type boltSink struct {
 	dbs		[]*bolt.DB
-	conv	sinks.MessageConverter
+	conv	sinks.MessageConverter[interface{}, []byte]
 	opt		sinks.SinkOption
 }
 
@@ -23,7 +23,7 @@ func (s *boltSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewBoltSink(dbs []*bolt.DB, conv sinks.MessageConverter, opt sinks.SinkOption) sinks.Sink {
+func NewBoltSink(dbs []*bolt.DB, conv sinks.MessageConverter[interface{}, []byte], opt sinks.SinkOption) sinks.Sink {
 	return &boltSink{
 		dbs: dbs,
   		conv: conv,

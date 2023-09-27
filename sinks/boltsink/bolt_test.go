@@ -1,4 +1,4 @@
-package pgsql
+package boltsink
 
 import (
 	"testing"
@@ -8,11 +8,9 @@ import (
 	// "github.com/stretchr/testify/assert"
 )
 
-func TestPgSQLSink(t *testing.T) {
+func TestBoltSink(t *testing.T) {
 	msg := pb.Hello{
 		Name: "Alice",
 	}
-	t.Log(protojson.Marshal(&msg))
-
-
+	t.Log(protojson.Marshal(&msg)) // just for log
 }

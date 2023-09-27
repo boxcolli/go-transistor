@@ -13,7 +13,7 @@ func TestBoltWAL(t *testing.T) {
 	msg := pb.Hello{
 		Name: "Alice",
 	}
-	t.Log(protojson.Marshal(&msg))
+	t.Log(protojson.Marshal(&msg)) // serialization: protobuf => json string
 
 	msgByte, _ := proto.Marshal(&msg) // serialization: protobuf => []byte
 	t.Log(msgByte)

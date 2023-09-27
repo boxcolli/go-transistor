@@ -1,4 +1,4 @@
-package bolt
+package mysqlsink
 
 import (
 	"testing"
@@ -8,9 +8,9 @@ import (
 	// "github.com/stretchr/testify/assert"
 )
 
-func TestBoltSink(t *testing.T) {
+func TestMySQLSink(t *testing.T) {
 	msg := pb.Hello{
 		Name: "Alice",
 	}
-	t.Log(protojson.Marshal(&msg))
+	t.Log(protojson.Marshal(&msg)) // just for log
 }

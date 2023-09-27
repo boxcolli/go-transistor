@@ -1,4 +1,4 @@
-package pgsql
+package mysqlsink
 
 import (
 	"time"
@@ -9,7 +9,7 @@ import (
 
 type pgsqlSink struct {
 	db		*sql.DB
-	conv	sinks.MessageConverter
+	conv	*sinks.SqlMessageConverter
 	val		sinks.TopicTableValidator
 	opt		sinks.SinkOption
 }
@@ -24,11 +24,11 @@ func (s *pgsqlSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewPgSQLSink(db *sql.DB, conv sinks.MessageConverter, val sinks.TopicTableValidator, opt sinks.SinkOption) sinks.Sink {
+func NewPgSQLSink(db *sql.DB, conv *sinks.SqlMessageConverter, opt sinks.SinkOption) sinks.Sink {
 	return &pgsqlSink{
 		db: db,
 		conv: conv,
-		val: val,
+		val: sinks.NewSQLTopicTableValidator(db),
 		opt: opt,
 	}
 }
