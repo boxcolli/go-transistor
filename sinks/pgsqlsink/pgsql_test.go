@@ -1,4 +1,4 @@
-package mysqlsink
+package mysqlsink_test
 
 import (
 	"testing"

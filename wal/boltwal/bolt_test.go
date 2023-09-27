@@ -1,4 +1,4 @@
-package boltwal
+package boltwal_test
 
 import (
 	"testing"

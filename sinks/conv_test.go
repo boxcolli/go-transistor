@@ -1,4 +1,4 @@
-package sinks
+package sinks_test
 
 import (
 	"testing"
