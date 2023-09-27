@@ -1,15 +1,15 @@
 syntax = "proto3";
 
-package sub.v1;
+package realtime.v1;
 
 option go_package = "./pb";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-service SubService {
-    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
-    rpc SubscribeTopic(SubscribeTopicRequest) returns (stream SubscribeTopicResponse) {}
+service RealtimeService {
+    
+    rpc Subscribe(SubscribeRequest) returns (stream SubscribeResponse) {}
 }
 
 message SendMessageRequest {
@@ -20,10 +20,10 @@ message SendMessageRequest {
 }
 message SendMessageResponse {}
 
-message SubscribeTopicRequest {
+message SubscribeRequest {
     string topic = 1;
     bytes topic_id = 2;
 }
-message SubscribeTopicResponse {
+message SubscribeResponse {
     google.protobuf.Any data = 1;
 }
