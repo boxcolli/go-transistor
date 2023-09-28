@@ -10,7 +10,6 @@ Topic validator:
 */
 type TopicTableValidator interface {
 	FetchTopicTable(topic string) (bool, error)
-	CreateTopicTable(topic string) error
 }
 
 type SQLTopicTableValidator struct {
@@ -19,11 +18,6 @@ type SQLTopicTableValidator struct {
 
 // FetchTopicTable implements sinks.TopicTableValidator.
 func (*SQLTopicTableValidator) FetchTopicTable(topic string) (bool, error) {
-	panic("unimplemented")
-}
-
-// CreateTopicTable implements sinks.TopicTableValidator.
-func (*SQLTopicTableValidator) CreateTopicTable(topic string) error {
 	panic("unimplemented")
 }
 

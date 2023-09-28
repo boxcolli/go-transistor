@@ -10,6 +10,5 @@ type Sink interface {
 
 //
 type SinkOption struct {
-	validateTopicTable bool
+	// validateTopicTable bool
 }
-

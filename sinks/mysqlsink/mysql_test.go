@@ -13,4 +13,24 @@ func TestMySQLSink(t *testing.T) {
 		Name: "Alice",
 	}
 	t.Log(protojson.Marshal(&msg)) // just for log
+
+	// INSERT
+	{
+
+	}
+
+	// SELECT
+	{
+		// assert
+	}
+
+	// DROP
+	{
+
+	}
+
+	// Read
+	{
+		// assert
+	}
 }

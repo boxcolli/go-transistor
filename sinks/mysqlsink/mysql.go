@@ -9,7 +9,7 @@ import (
 
 type mysqlSink struct {
 	db		*sql.DB
-	conv	*sinks.SqlMessageConverter
+	conv	sinks.Converter[interface{}, string]
 	val		sinks.TopicTableValidator
 	opt		sinks.SinkOption
 }
@@ -24,7 +24,7 @@ func (s *mysqlSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewMySQLSink(db *sql.DB, conv *sinks.SqlMessageConverter, opt sinks.SinkOption) sinks.Sink {
+func NewMySQLSink(db *sql.DB, conv sinks.Converter[interface{}, string], opt sinks.SinkOption) sinks.Sink {
 	return &mysqlSink{
 		db: db,
 		conv: conv,

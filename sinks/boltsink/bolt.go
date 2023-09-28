@@ -9,7 +9,7 @@ import (
 
 type boltSink struct {
 	dbs		map[string]*bolt.DB
-	conv	sinks.MessageConverter[interface{}, []byte]
+	conv	sinks.Converter[interface{}, []byte]
 	opt		sinks.SinkOption
 }
 
@@ -23,7 +23,7 @@ func (s *boltSink) Delete(topic string, topicId []byte) error {
 	panic("unimplemented")
 }
 
-func NewBoltSink(dbs map[string]*bolt.DB, conv sinks.MessageConverter[interface{}, []byte], opt sinks.SinkOption) sinks.Sink {
+func NewBoltSink(dbs map[string]*bolt.DB, conv sinks.Converter[interface{}, []byte], opt sinks.SinkOption) sinks.Sink {
 	return &boltSink{
 		dbs: dbs,
   		conv: conv,

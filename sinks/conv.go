@@ -1,8 +1,14 @@
 package sinks
 
-type MessageConverter[M any, S any] interface {
-	MessageToSchema(topic string, msg M) (S, error)
+import "time"
+
+type Converter[M any, S any] interface {
+	GetWriteQuery(topic string, topicId []byte, msg M, timestamp time.Time) (S, error)
+	GetDeleteQuery(topic string, topicId []byte, msg M, timestamp time.Time) (S, error)
 }
+
+type MTOW map[string]func([]byte, interface{}, time.Time) (string, error)
+type MTOD map[string]func([]byte, interface{}, time.Time) (string, error)
 
 type SqlMessageConverter struct {
 	/*
@@ -10,16 +16,23 @@ type SqlMessageConverter struct {
 			key: topic
 			value: a function that converts protobuf message struct to string
 	*/
-	mtos map[string]func(interface{}) (string, error)
+	mtow MTOW
+	mtod MTOD
 }
 
-func (m *SqlMessageConverter) MessageToSchema(topic string, msg interface{}) (string, error) {
+func (m *SqlMessageConverter) GetWriteQuery(topic string, topicId []byte, msg interface{}, timestamp time.Time) (string, error) {
 	// receive protobuf message, convert it into string
-	return m.mtos[topic](msg)
+	return m.mtow[topic](topicId, msg, timestamp)
 }
 
-func NewSQLMessageConverter(mtos map[string]func(interface{}) (string, error)) *SqlMessageConverter {
+func (m *SqlMessageConverter) GetDeleteQuery(topic string, topicId []byte, msg interface{}, timestamp time.Time) (string, error) {
+	// receive protobuf message, convert it into string
+	return m.mtod[topic](topicId, msg, timestamp)
+}
+
+func NewSQLMessageConverter(mtow MTOW, mtod MTOD) *SqlMessageConverter {
 	return &SqlMessageConverter{
-		mtos: mtos,
+		mtow: mtow,
+		mtod: mtod,
 	}
 }
