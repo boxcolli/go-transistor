@@ -7,6 +7,11 @@ import (
 type emptyPlug struct {
 }
 
+// GetDiscoveryAddr implements plugs.Plug.
+func (*emptyPlug) GetDiscoveryAddr() {
+	panic("unimplemented")
+}
+
 // Destroy implements plugs.Plug.
 func (*emptyPlug) Destroy() {
 	panic("unimplemented")
