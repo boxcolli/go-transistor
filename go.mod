@@ -3,7 +3,9 @@ module github.com/boxcolli/pepperlink
 go 1.21.0
 
 require (
+	github.com/redis/go-redis/v9 v9.2.1
 	github.com/stretchr/testify v1.8.1
+	go.etcd.io/etcd/server/v3 v3.5.9
 	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.31.0
 )
@@ -21,6 +23,7 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
@@ -81,7 +84,6 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20230926191106-14b8ccdc517d
 	github.com/golang/protobuf v1.5.3 // indirect
 	go.etcd.io/etcd/client/v3 v3.5.9
-	go.etcd.io/etcd/server/v3 v3.5.9
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
