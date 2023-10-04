@@ -8,44 +8,35 @@ option go_package = "./pb";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-message Entity {
-    bytes id = 1;        // any length that ensures uniqueness within current network level
-    int32 role = 2;     // 0: publisher, 1: subscriber, 2?: hybrid
-    string addr = 3;    // full grpc address with port
-}
-
 service LinkService {
-    rpc GetLevelRange(GetLevelRangeRequest) returns (GetLevelRangeResponse) {}
-    rpc GetTopology(GetTopologyRequest) returns (GetTopologyResponse) {}
-    rpc Join(JoinRequest) returns (JoinResponse) {}
+    // Non-cluster stream
+    rpc Publish(stream PublishRequest) returns (PublishResponse) {}
+
+    // Both cluster/non-cluster stream
     rpc Subscribe(stream SubscribeRequest) returns (stream SubscribeResponse) {} // Subscriber approaches Publisher
+
+    // For command line interface
+    rpc Command(CommandRequest) returns (stream CommandResponse) {}
 }
 
-message GetLevelRangeRequest {}
-message GetLevelRangeResponse {
-    int32 start = 1;
-    int32 end = 2;
+message PublishRequest {
+    string topic = 1;
+    bytes topic_id = 2;
+    google.protobuf.Any data = 3;
+    google.protobuf.Timestamp timestamp = 4;
 }
 
-message GetTopologyRequest {
-    int32 level = 1;
-}
-
-message GetTopologyResponse {
-    repeated Entity entities = 1;   // list
-}
-
-message JoinRequest {
-    int32 level = 1;    // This is not a global network level. 0: Same network tree level of current node
-    int32 role = 2;     
-}
-
-message JoinResponse {
-    repeated Entity entities = 1;   // list
+message PublishResponse {
+    //
 }
 
 message SubscribeRequest {
-    repeated string topics = 1;
+    // Cluster name
+    string cname = 1;
+
+    // For topic filter
+    repeated string topics = 2;
+    repeated bytes topic_ids = 3;
 }
 
 message SubscribeResponse {
@@ -53,4 +44,12 @@ message SubscribeResponse {
     bytes   topic_id = 2;
     google.protobuf.Any data = 3;
     google.protobuf.Timestamp timestamp = 4;
+}
+
+message CommandRequest {
+    repeated string args = 1;
+}
+
+message CommandResponse {
+    string line = 1;
 }
