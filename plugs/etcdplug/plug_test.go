@@ -44,6 +44,7 @@ func TestEtcdPlug(t *testing.T) {
 		assert.NoError(t, err)
 
 		members = append(members, plugs.Member{
+			Cname: "c0",
 			Name: "n0",
 			Host: "0",
 			Port: "0",
@@ -68,6 +69,7 @@ func TestEtcdPlug(t *testing.T) {
 			{
 				Method: plugs.MethodPut,
 				Data: plugs.Member{
+					Cname: "c0",
 					Name: "n1",
 					Host: "1",
 					Port: "1",
@@ -76,6 +78,7 @@ func TestEtcdPlug(t *testing.T) {
 			{
 				Method: plugs.MethodDel,
 				Data: plugs.Member{
+					Cname: "c0",
 					Name: "n1",
 					Host: "",
 					Port: "",

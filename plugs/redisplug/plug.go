@@ -1,6 +1,7 @@
 package redisplug
 
 import (
+	"context"
 	"sync"
 
 	"github.com/boxcolli/pepperlink/plugs"
@@ -10,54 +11,44 @@ import (
 type redisPlug struct {
 	client *redis.Client
 
-	gk func(string, string) string
-	gv func(string, string) string
+	// Special key prefix for key name
+	prefix string
 
 	// To prevent emitting myself in watch channel
 	me   *plugs.Member
 	memx sync.RWMutex
 
-	w   map[string]chan plugs.Change // Singleton watch channels
-	wch map[string]chan bool         // Channels connected with watch goroutines
-	wmx sync.Mutex
-}
-
-// generateKey implements plugs.Plug.
-func (p *redisPlug) generateKey(cname string, name string) string {
-	return p.gk(cname, name)
-}
-
-// generateValue implements plugs.Plug.
-func (p *redisPlug) generateValue(host string, port string) string {
-	return p.gv(host, port)
+	w     map[string]chan plugs.Change // Singleton watch channels
+	stopw map[string]chan bool         // Channels connected with watch goroutines
+	wmx   sync.Mutex
 }
 
 // Advertise implements plugs.Plug.
-func (p *redisPlug) Advertise(cname string, me plugs.Member) {
-
+func (*redisPlug) Advertise(ctx context.Context, cname string, me plugs.Member) error {
+	panic("unimplemented")
 }
 
 // Destroy implements plugs.Plug.
-func (p *redisPlug) Destroy() {
+func (*redisPlug) Destroy() {
 	panic("unimplemented")
 }
 
 // Read implements plugs.Plug.
-func (p *redisPlug) Read(cname string) []plugs.Member {
+func (*redisPlug) Read(ctx context.Context, cname string) ([]plugs.Member, error) {
 	panic("unimplemented")
 }
 
 // Stop implements plugs.Plug.
-func (p *redisPlug) Stop(cname string) {
+func (*redisPlug) Stop(cname string) {
 	panic("unimplemented")
 }
 
 // Watch implements plugs.Plug.
-func (p *redisPlug) Watch(cname string) <-chan plugs.Change {
+func (*redisPlug) Watch(ctx context.Context, cname string, size int) <-chan plugs.Change {
 	panic("unimplemented")
 }
 
-func NewRedisPlug(client *redis.Client, gk func(string, string) string, gv func(string, string) string) plugs.Plug {
+func NewRedisPlug(client *redis.Client, prefix string) plugs.Plug {
 	return &redisPlug{
 		client: client,
 	}

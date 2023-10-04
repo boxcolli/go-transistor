@@ -36,6 +36,7 @@ type Change struct {
 }
 
 type Member struct {
+	Cname string
 	Name string
 	Host string
 	Port string

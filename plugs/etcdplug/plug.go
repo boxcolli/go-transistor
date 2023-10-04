@@ -69,7 +69,7 @@ func (p *etcdPlug) Read(ctx context.Context, cname string) ([]plugs.Member, erro
 	ms := []plugs.Member{}
 	for _, kv := range res.Kvs {
 		m := plugs.Member{}
-		m.Name = p.scanKey(kv.Key)
+		m.Cname, m.Name = p.scanKey(kv.Key)
 		m.Host, m.Port = p.scanValue(kv.Value)
 		ms = append(ms, m)
 	}
@@ -107,7 +107,7 @@ func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) <-chan plu
 					switch event.Type {
 					case clientv3.EventTypePut:
 						m := plugs.Member{}
-						m.Name = p.scanKey(event.Kv.Key)
+						m.Cname, m.Name = p.scanKey(event.Kv.Key)
 						m.Host, m.Port = p.scanValue(event.Kv.Value)
 						
 						p.memx.RLock()
@@ -122,9 +122,8 @@ func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) <-chan plu
 							Data: m,
 						}
 					case clientv3.EventTypeDelete:
-						m := plugs.Member{
-							Name: p.scanKey(event.Kv.Key),
-						}
+						m := plugs.Member{}
+						m.Cname, m.Name = p.scanKey(event.Kv.Key)
 
 						p.memx.RLock()
 						if p.me != nil && p.me.Name == m.Name {
@@ -184,13 +183,19 @@ func (p *etcdPlug) value(host, port string) string {
 	return fmt.Sprintf(fValue, host, port)
 }
 
-func (p *etcdPlug) scanKey(key []byte) string {
-	for i := len(key) - 1; i >= 0; i-- {
+func (p *etcdPlug) scanKey(key []byte) (string, string) {
+	i, j := 0, len(key) - 1
+	for ; i < len(key); i++ {
 		if key[i] == ':' {
-			return string(key[i+1:])
+			for ; j >= 0; j-- {
+				if key[j] == ':' {
+					return string(key[i+1 : j]), string(key[j+1 :])
+				}
+			}
+			break
 		}
 	}
-	return ""
+	return "", ""
 }
 
 func (p *etcdPlug) scanValue(value []byte) (string, string) {
