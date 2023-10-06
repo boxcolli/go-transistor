@@ -3,7 +3,7 @@ package boltwal
 import (
 	"time"
 
-	"github.com/boxcolli/pepperlink/wal"
+	"github.com/boxcolli/go-transistor/wal"
 	"github.com/boltdb/bolt"
 )
 

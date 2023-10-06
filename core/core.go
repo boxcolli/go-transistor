@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/boxcolli/pepperlink/emitters"
-	"github.com/boxcolli/pepperlink/plugs"
+	"github.com/boxcolli/go-transistor/emitters"
+	"github.com/boxcolli/go-transistor/plugs"
 )
 
 // A core is a builder and also a CLI engine

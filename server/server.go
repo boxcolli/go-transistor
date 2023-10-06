@@ -1,6 +1,6 @@
 package server
 
-import pb "github.com/boxcolli/pepperlink/idl/gen/transistor/v1"
+import pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 
 type transistorServer struct {
 	pb.UnimplementedTransistorServiceServer

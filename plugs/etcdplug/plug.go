@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/boxcolli/pepperlink/plugs"
+	"github.com/boxcolli/go-transistor/plugs"
 	"go.etcd.io/etcd/client/v3"
 )
 

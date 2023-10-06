@@ -1,8 +1,8 @@
 package pluggedcollector
 
 import (
-	"github.com/boxcolli/pepperlink/collectors"
-	"github.com/boxcolli/pepperlink/plugs"
+	"github.com/boxcolli/go-transistor/collectors"
+	"github.com/boxcolli/go-transistor/plugs"
 )
 
 type pluggedCollector struct {

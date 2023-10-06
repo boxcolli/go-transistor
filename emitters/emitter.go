@@ -3,7 +3,7 @@ package emitters
 import (
 	"time"
 
-	pb "github.com/boxcolli/pepperlink/idl/gen/transistor/v1"
+	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 )
 
 type Emitter interface {

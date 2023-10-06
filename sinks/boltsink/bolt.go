@@ -3,7 +3,7 @@ package boltsink
 import (
 	"time"
 
-	"github.com/boxcolli/pepperlink/sinks"
+	"github.com/boxcolli/go-transistor/sinks"
 	"github.com/boltdb/bolt"
 )
 

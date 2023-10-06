@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	pbhello "github.com/boxcolli/pepperlink/idl/gen/hello/v1"
-	pb "github.com/boxcolli/pepperlink/idl/gen/link/v1"
+	pbhello "github.com/boxcolli/go-transistor/idl/gen/hello/v1"
+	pb "github.com/boxcolli/go-transistor/idl/gen/link/v1"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/boxcolli/pepperlink/sinks"
+	"github.com/boxcolli/go-transistor/sinks"
 )
 
 type Query struct {

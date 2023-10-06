@@ -1,6 +1,6 @@
 package servicecollector
 
-import "github.com/boxcolli/pepperlink/collectors"
+import "github.com/boxcolli/go-transistor/collectors"
 
 type serviceCollector struct {
 }

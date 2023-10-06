@@ -1,5 +1,5 @@
 version: v1
-name: buf.build/idl/api
+name: buf.build/api/proto
 breaking:
   use:
     - FILE

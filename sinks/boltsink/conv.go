@@ -1,7 +1,7 @@
 package boltsink
 
 import (
-	"github.com/boxcolli/pepperlink/sinks"
+	"github.com/boxcolli/go-transistor/sinks"
 )
 
 type boltMessageConverter struct {

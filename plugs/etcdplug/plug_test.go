@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boxcolli/pepperlink/plugs"
+	"github.com/boxcolli/go-transistor/plugs"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/server/v3/embed"

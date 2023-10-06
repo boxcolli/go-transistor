@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/boxcolli/pepperlink/plugs"
+	"github.com/boxcolli/go-transistor/plugs"
 	"github.com/redis/go-redis/v9"
 )
 

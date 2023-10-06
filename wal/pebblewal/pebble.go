@@ -3,7 +3,7 @@ package pebblewal
 import (
 	"time"
 
-	"github.com/boxcolli/pepperlink/wal"
+	"github.com/boxcolli/go-transistor/wal"
 	"github.com/cockroachdb/pebble"
 )
 

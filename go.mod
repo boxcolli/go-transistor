@@ -1,4 +1,4 @@
-module github.com/boxcolli/pepperlink
+module github.com/boxcolli/go-transistor
 
 go 1.21.0
 

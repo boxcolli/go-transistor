@@ -3,7 +3,7 @@ package pebblewal
 import (
 	"testing"
 
-	pb "github.com/boxcolli/pepperlink/idl/gen/hello/v1"
+	pb "github.com/boxcolli/go-transistor/api/gen/hello/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/encoding/protojson"
 	// "github.com/stretchr/testify/assert"
@@ -11,7 +11,7 @@ import (
 
 func TestPebbleWAL(t *testing.T) {
 	msg := pb.Hello{
-		Name: "Alice",
+		
 	}
 	t.Log(protojson.Marshal(&msg)) // serialization: protobuf => json string
 

@@ -19,22 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	TransistorService_Command_FullMethodName   = "/transistor.v1.TransistorService/Command"
 	TransistorService_Publish_FullMethodName   = "/transistor.v1.TransistorService/Publish"
 	TransistorService_Subscribe_FullMethodName = "/transistor.v1.TransistorService/Subscribe"
-	TransistorService_Command_FullMethodName   = "/transistor.v1.TransistorService/Command"
 )
 
 // TransistorServiceClient is the client API for TransistorService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransistorServiceClient interface {
+	// Open a new command line interface
+	Command(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (TransistorService_CommandClient, error)
 	// Receive a stream from a non-cluster node
 	Publish(ctx context.Context, opts ...grpc.CallOption) (TransistorService_PublishClient, error)
 	// Receive a stream from both cluster/non-cluster nodes
 	// Always the subscriber should approach to this server
 	Subscribe(ctx context.Context, opts ...grpc.CallOption) (TransistorService_SubscribeClient, error)
-	// Open a new command line interface
-	Command(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (TransistorService_CommandClient, error)
 }
 
 type transistorServiceClient struct {
@@ -45,8 +45,40 @@ func NewTransistorServiceClient(cc grpc.ClientConnInterface) TransistorServiceCl
 	return &transistorServiceClient{cc}
 }
 
+func (c *transistorServiceClient) Command(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (TransistorService_CommandClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[0], TransistorService_Command_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &transistorServiceCommandClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TransistorService_CommandClient interface {
+	Recv() (*CommandResponse, error)
+	grpc.ClientStream
+}
+
+type transistorServiceCommandClient struct {
+	grpc.ClientStream
+}
+
+func (x *transistorServiceCommandClient) Recv() (*CommandResponse, error) {
+	m := new(CommandResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *transistorServiceClient) Publish(ctx context.Context, opts ...grpc.CallOption) (TransistorService_PublishClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[0], TransistorService_Publish_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[1], TransistorService_Publish_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +112,7 @@ func (x *transistorServicePublishClient) CloseAndRecv() (*PublishResponse, error
 }
 
 func (c *transistorServiceClient) Subscribe(ctx context.Context, opts ...grpc.CallOption) (TransistorService_SubscribeClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[1], TransistorService_Subscribe_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[2], TransistorService_Subscribe_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,49 +142,17 @@ func (x *transistorServiceSubscribeClient) Recv() (*SubscribeResponse, error) {
 	return m, nil
 }
 
-func (c *transistorServiceClient) Command(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (TransistorService_CommandClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TransistorService_ServiceDesc.Streams[2], TransistorService_Command_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &transistorServiceCommandClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type TransistorService_CommandClient interface {
-	Recv() (*CommandResponse, error)
-	grpc.ClientStream
-}
-
-type transistorServiceCommandClient struct {
-	grpc.ClientStream
-}
-
-func (x *transistorServiceCommandClient) Recv() (*CommandResponse, error) {
-	m := new(CommandResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // TransistorServiceServer is the server API for TransistorService service.
 // All implementations must embed UnimplementedTransistorServiceServer
 // for forward compatibility
 type TransistorServiceServer interface {
+	// Open a new command line interface
+	Command(*CommandRequest, TransistorService_CommandServer) error
 	// Receive a stream from a non-cluster node
 	Publish(TransistorService_PublishServer) error
 	// Receive a stream from both cluster/non-cluster nodes
 	// Always the subscriber should approach to this server
 	Subscribe(TransistorService_SubscribeServer) error
-	// Open a new command line interface
-	Command(*CommandRequest, TransistorService_CommandServer) error
 	mustEmbedUnimplementedTransistorServiceServer()
 }
 
@@ -160,14 +160,14 @@ type TransistorServiceServer interface {
 type UnimplementedTransistorServiceServer struct {
 }
 
+func (UnimplementedTransistorServiceServer) Command(*CommandRequest, TransistorService_CommandServer) error {
+	return status.Errorf(codes.Unimplemented, "method Command not implemented")
+}
 func (UnimplementedTransistorServiceServer) Publish(TransistorService_PublishServer) error {
 	return status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedTransistorServiceServer) Subscribe(TransistorService_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
-}
-func (UnimplementedTransistorServiceServer) Command(*CommandRequest, TransistorService_CommandServer) error {
-	return status.Errorf(codes.Unimplemented, "method Command not implemented")
 }
 func (UnimplementedTransistorServiceServer) mustEmbedUnimplementedTransistorServiceServer() {}
 
@@ -180,6 +180,27 @@ type UnsafeTransistorServiceServer interface {
 
 func RegisterTransistorServiceServer(s grpc.ServiceRegistrar, srv TransistorServiceServer) {
 	s.RegisterService(&TransistorService_ServiceDesc, srv)
+}
+
+func _TransistorService_Command_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CommandRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TransistorServiceServer).Command(m, &transistorServiceCommandServer{stream})
+}
+
+type TransistorService_CommandServer interface {
+	Send(*CommandResponse) error
+	grpc.ServerStream
+}
+
+type transistorServiceCommandServer struct {
+	grpc.ServerStream
+}
+
+func (x *transistorServiceCommandServer) Send(m *CommandResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _TransistorService_Publish_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -234,27 +255,6 @@ func (x *transistorServiceSubscribeServer) Recv() (*SubscribeRequest, error) {
 	return m, nil
 }
 
-func _TransistorService_Command_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(CommandRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(TransistorServiceServer).Command(m, &transistorServiceCommandServer{stream})
-}
-
-type TransistorService_CommandServer interface {
-	Send(*CommandResponse) error
-	grpc.ServerStream
-}
-
-type transistorServiceCommandServer struct {
-	grpc.ServerStream
-}
-
-func (x *transistorServiceCommandServer) Send(m *CommandResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 // TransistorService_ServiceDesc is the grpc.ServiceDesc for TransistorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -263,6 +263,11 @@ var TransistorService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TransistorServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Command",
+			Handler:       _TransistorService_Command_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "Publish",
 			Handler:       _TransistorService_Publish_Handler,
@@ -273,11 +278,6 @@ var TransistorService_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _TransistorService_Subscribe_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
-		},
-		{
-			StreamName:    "Command",
-			Handler:       _TransistorService_Command_Handler,
-			ServerStreams: true,
 		},
 	},
 	Metadata: "transistor/v1/transistor.proto",
