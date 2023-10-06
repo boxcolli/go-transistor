@@ -1,15 +1,19 @@
 package core
 
 import (
-	"github.com/boxcolli/pepperlink/actions"
+	"github.com/boxcolli/pepperlink/emitters"
 	"github.com/boxcolli/pepperlink/plugs"
-	"github.com/boxcolli/pepperlink/servers"
 )
 
-type Core struct {
+// A core is a builder and also a CLI engine
+type Core interface {
+
+}
+
+type core struct {
 	
 }
 
-func NewCore(plug plugs.Plug, server servers.Server, action []actions.Action) {
+func NewCore(p plugs.Plug, e emitters.Emitter) {
 	
 }

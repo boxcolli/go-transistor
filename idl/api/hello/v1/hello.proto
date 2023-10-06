@@ -4,11 +4,12 @@ package hello.v1;
 
 option go_package = "./pb";
 
-// import "obj/v1/obj.proto";
+import "google/protobuf/wrappers.proto";
 // import "google/protobuf/timestamp.proto";
 
 // For component test
 message Hello {
-    bytes id = 1;
-    string name = 2;
+    google.protobuf.BytesValue id = 1;
+    google.protobuf.StringValue name = 2;
+    google.protobuf.Int32Value age = 3;
 }

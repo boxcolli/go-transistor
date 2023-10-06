@@ -4,11 +4,11 @@ import "time"
 
 // 
 type Sink interface {
-	Write(topic string, topicId []byte, msg interface{}, timestamp time.Time) error
-	Delete(topic string, topicId []byte) error
+	Create(topic string, topicId []byte, data interface{}, tp time.Time) error
+	Update(topic string, topicId []byte, data interface{}, tp time.Time) error
+	Delete(topic string, topicId []byte, tp time.Time) error
 }
 
-//
 type SinkOption struct {
-	// validateTopicTable bool
+	// validateTopicTable	bool
 }

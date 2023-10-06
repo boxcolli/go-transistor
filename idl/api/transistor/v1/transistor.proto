@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package transistor.v1;
+
+option go_package = "./pb";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+enum Method {
+    METHOD_UNSPECIFIED = 0;
+    METHOD_EMPTY = 1;
+    METHOD_CREATE = 2;
+    METHOD_UPDATE = 3;
+    METHOD_DELETE = 4;
+}
+
+service TransistorService {
+    // Open a new command line interface
+    rpc Command(CommandRequest) returns (stream CommandResponse) {}
+    
+    // Receive a stream from a non-cluster node
+    rpc Publish(stream PublishRequest) returns (PublishResponse) {}
+
+    // Receive a stream from both cluster/non-cluster nodes
+    // Always the subscriber should approach to this server
+    rpc Subscribe(stream SubscribeRequest) returns (stream SubscribeResponse) {}
+}
+
+message PublishRequest {
+    google.protobuf.StringValue topic = 1;
+    google.protobuf.BytesValue topic_id = 2;
+    Method method = 3;
+    google.protobuf.Any data = 4;
+    google.protobuf.Timestamp timestamp = 5;
+}
+
+message PublishResponse {
+    //
+}
+
+message SubscribeRequest {
+    // Cluster name
+    string cname = 1;
+
+    // For topic filter
+    repeated string topics = 2;
+    repeated bytes topic_ids = 3;
+}
+
+message SubscribeResponse {
+    google.protobuf.StringValue topic = 1;
+    google.protobuf.BytesValue topic_id = 2;
+    Method method = 3;
+    google.protobuf.Any data = 4;
+    google.protobuf.Timestamp timestamp = 5;
+}
+
+message CommandRequest {
+    repeated string args = 1;
+}
+
+message CommandResponse {
+    string line = 1;
+}
