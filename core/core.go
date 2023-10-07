@@ -10,10 +10,18 @@ type Core interface {
 
 }
 
+type CoreOption struct {
+	cname string
+	name string
+	
+	p plugs.Plug
+	e emitters.Emitter
+}
+
 type core struct {
 	
 }
 
-func NewCore(p plugs.Plug, e emitters.Emitter) {
+func NewCore(opt CoreOption) {
 	
 }

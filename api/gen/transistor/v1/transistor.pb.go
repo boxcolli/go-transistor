@@ -78,22 +78,97 @@ func (Method) EnumDescriptor() ([]byte, []int) {
 	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{0}
 }
 
-type PublishRequest struct {
+type Message struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Topic     *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	TopicId   *wrapperspb.BytesValue  `protobuf:"bytes,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	TopicId   *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Method    Method                  `protobuf:"varint,3,opt,name=method,proto3,enum=transistor.v1.Method" json:"method,omitempty"`
 	Data      *anypb.Any              `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 	Timestamp *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 }
 
+func (x *Message) Reset() {
+	*x = Message{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_transistor_v1_transistor_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Message) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Message) ProtoMessage() {}
+
+func (x *Message) ProtoReflect() protoreflect.Message {
+	mi := &file_transistor_v1_transistor_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Message.ProtoReflect.Descriptor instead.
+func (*Message) Descriptor() ([]byte, []int) {
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Message) GetTopic() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Topic
+	}
+	return nil
+}
+
+func (x *Message) GetTopicId() *wrapperspb.StringValue {
+	if x != nil {
+		return x.TopicId
+	}
+	return nil
+}
+
+func (x *Message) GetMethod() Method {
+	if x != nil {
+		return x.Method
+	}
+	return Method_METHOD_UNSPECIFIED
+}
+
+func (x *Message) GetData() *anypb.Any {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *Message) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+type PublishRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Msg *Message `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+}
+
 func (x *PublishRequest) Reset() {
 	*x = PublishRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[0]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -106,7 +181,7 @@ func (x *PublishRequest) String() string {
 func (*PublishRequest) ProtoMessage() {}
 
 func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[0]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -119,40 +194,12 @@ func (x *PublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
 func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{0}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *PublishRequest) GetTopic() *wrapperspb.StringValue {
+func (x *PublishRequest) GetMsg() *Message {
 	if x != nil {
-		return x.Topic
-	}
-	return nil
-}
-
-func (x *PublishRequest) GetTopicId() *wrapperspb.BytesValue {
-	if x != nil {
-		return x.TopicId
-	}
-	return nil
-}
-
-func (x *PublishRequest) GetMethod() Method {
-	if x != nil {
-		return x.Method
-	}
-	return Method_METHOD_UNSPECIFIED
-}
-
-func (x *PublishRequest) GetData() *anypb.Any {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *PublishRequest) GetTimestamp() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Timestamp
+		return x.Msg
 	}
 	return nil
 }
@@ -166,7 +213,7 @@ type PublishResponse struct {
 func (x *PublishResponse) Reset() {
 	*x = PublishResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[1]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -179,7 +226,7 @@ func (x *PublishResponse) String() string {
 func (*PublishResponse) ProtoMessage() {}
 
 func (x *PublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[1]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -192,7 +239,7 @@ func (x *PublishResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishResponse.ProtoReflect.Descriptor instead.
 func (*PublishResponse) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{1}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{2}
 }
 
 type SubscribeRequest struct {
@@ -210,7 +257,7 @@ type SubscribeRequest struct {
 func (x *SubscribeRequest) Reset() {
 	*x = SubscribeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[2]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -223,7 +270,7 @@ func (x *SubscribeRequest) String() string {
 func (*SubscribeRequest) ProtoMessage() {}
 
 func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[2]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -236,7 +283,7 @@ func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{2}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SubscribeRequest) GetCname() string {
@@ -265,17 +312,13 @@ type SubscribeResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Topic     *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	TopicId   *wrapperspb.BytesValue  `protobuf:"bytes,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Method    Method                  `protobuf:"varint,3,opt,name=method,proto3,enum=transistor.v1.Method" json:"method,omitempty"`
-	Data      *anypb.Any              `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
-	Timestamp *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Msg *Message `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
 }
 
 func (x *SubscribeResponse) Reset() {
 	*x = SubscribeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[3]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -288,7 +331,7 @@ func (x *SubscribeResponse) String() string {
 func (*SubscribeResponse) ProtoMessage() {}
 
 func (x *SubscribeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[3]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -301,40 +344,12 @@ func (x *SubscribeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeResponse.ProtoReflect.Descriptor instead.
 func (*SubscribeResponse) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{3}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *SubscribeResponse) GetTopic() *wrapperspb.StringValue {
+func (x *SubscribeResponse) GetMsg() *Message {
 	if x != nil {
-		return x.Topic
-	}
-	return nil
-}
-
-func (x *SubscribeResponse) GetTopicId() *wrapperspb.BytesValue {
-	if x != nil {
-		return x.TopicId
-	}
-	return nil
-}
-
-func (x *SubscribeResponse) GetMethod() Method {
-	if x != nil {
-		return x.Method
-	}
-	return Method_METHOD_UNSPECIFIED
-}
-
-func (x *SubscribeResponse) GetData() *anypb.Any {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *SubscribeResponse) GetTimestamp() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Timestamp
+		return x.Msg
 	}
 	return nil
 }
@@ -350,7 +365,7 @@ type CommandRequest struct {
 func (x *CommandRequest) Reset() {
 	*x = CommandRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[4]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -363,7 +378,7 @@ func (x *CommandRequest) String() string {
 func (*CommandRequest) ProtoMessage() {}
 
 func (x *CommandRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[4]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +391,7 @@ func (x *CommandRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandRequest.ProtoReflect.Descriptor instead.
 func (*CommandRequest) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{4}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CommandRequest) GetArgs() []string {
@@ -397,7 +412,7 @@ type CommandResponse struct {
 func (x *CommandResponse) Reset() {
 	*x = CommandResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_transistor_v1_transistor_proto_msgTypes[5]
+		mi := &file_transistor_v1_transistor_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -410,7 +425,7 @@ func (x *CommandResponse) String() string {
 func (*CommandResponse) ProtoMessage() {}
 
 func (x *CommandResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transistor_v1_transistor_proto_msgTypes[5]
+	mi := &file_transistor_v1_transistor_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +438,7 @@ func (x *CommandResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandResponse.ProtoReflect.Descriptor instead.
 func (*CommandResponse) Descriptor() ([]byte, []int) {
-	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{5}
+	return file_transistor_v1_transistor_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CommandResponse) GetLine() string {
@@ -444,49 +459,39 @@ var file_transistor_v1_transistor_proto_rawDesc = []byte{
 	0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x19, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2f, 0x61, 0x6e, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x8f, 0x02, 0x0a, 0x0e,
-	0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x32,
-	0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
+	0x66, 0x2f, 0x61, 0x6e, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x89, 0x02, 0x0a, 0x07,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x32, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x37, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
 	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x05, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x12, 0x36, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x79, 0x74, 0x65, 0x73, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6d, 0x65,
-	0x74, 0x68, 0x6f, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x15, 0x2e, 0x74, 0x72, 0x61,
-	0x6e, 0x73, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x65, 0x74, 0x68, 0x6f,
-	0x64, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x28, 0x0a, 0x04, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x52, 0x04, 0x64,
-	0x61, 0x74, 0x61, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x11, 0x0a,
-	0x0f, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x5d, 0x0a, 0x10, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x05, 0x63, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18,
-	0x03, 0x20, 0x03, 0x28, 0x0c, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x22,
-	0x92, 0x02, 0x0a, 0x11, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x32, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c,
-	0x75, 0x65, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x36, 0x0a, 0x08, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x67, 0x6f,
-	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x79,
-	0x74, 0x65, 0x73, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0e, 0x32, 0x15, 0x2e, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64,
-	0x12, 0x28, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x41, 0x6e, 0x79, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
-	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73,
-	0x74, 0x61, 0x6d, 0x70, 0x22, 0x24, 0x0a, 0x0e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52,
+	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x15, 0x2e, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x69, 0x73, 0x74, 0x6f,
+	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x52, 0x06, 0x6d, 0x65, 0x74,
+	0x68, 0x6f, 0x64, 0x12, 0x28, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x14, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x41, 0x6e, 0x79, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x38, 0x0a,
+	0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69,
+	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x3a, 0x0a, 0x0e, 0x50, 0x75, 0x62, 0x6c, 0x69,
+	0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x03, 0x6d, 0x73, 0x67,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x69, 0x73,
+	0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x03,
+	0x6d, 0x73, 0x67, 0x22, 0x11, 0x0a, 0x0f, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x5d, 0x0a, 0x10, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72,
+	0x69, 0x62, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x63, 0x6e, 0x61, 0x6d, 0x65,
+	0x12, 0x16, 0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09,
+	0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0c, 0x52, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x73, 0x22, 0x3d, 0x0a, 0x11, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69,
+	0x62, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x28, 0x0a, 0x03, 0x6d, 0x73,
+	0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x69,
+	0x73, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
+	0x03, 0x6d, 0x73, 0x67, 0x22, 0x24, 0x0a, 0x0e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x22, 0x25, 0x0a, 0x0f, 0x43, 0x6f,
 	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a,
@@ -531,42 +536,39 @@ func file_transistor_v1_transistor_proto_rawDescGZIP() []byte {
 }
 
 var file_transistor_v1_transistor_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_transistor_v1_transistor_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_transistor_v1_transistor_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_transistor_v1_transistor_proto_goTypes = []interface{}{
 	(Method)(0),                    // 0: transistor.v1.Method
-	(*PublishRequest)(nil),         // 1: transistor.v1.PublishRequest
-	(*PublishResponse)(nil),        // 2: transistor.v1.PublishResponse
-	(*SubscribeRequest)(nil),       // 3: transistor.v1.SubscribeRequest
-	(*SubscribeResponse)(nil),      // 4: transistor.v1.SubscribeResponse
-	(*CommandRequest)(nil),         // 5: transistor.v1.CommandRequest
-	(*CommandResponse)(nil),        // 6: transistor.v1.CommandResponse
-	(*wrapperspb.StringValue)(nil), // 7: google.protobuf.StringValue
-	(*wrapperspb.BytesValue)(nil),  // 8: google.protobuf.BytesValue
+	(*Message)(nil),                // 1: transistor.v1.Message
+	(*PublishRequest)(nil),         // 2: transistor.v1.PublishRequest
+	(*PublishResponse)(nil),        // 3: transistor.v1.PublishResponse
+	(*SubscribeRequest)(nil),       // 4: transistor.v1.SubscribeRequest
+	(*SubscribeResponse)(nil),      // 5: transistor.v1.SubscribeResponse
+	(*CommandRequest)(nil),         // 6: transistor.v1.CommandRequest
+	(*CommandResponse)(nil),        // 7: transistor.v1.CommandResponse
+	(*wrapperspb.StringValue)(nil), // 8: google.protobuf.StringValue
 	(*anypb.Any)(nil),              // 9: google.protobuf.Any
 	(*timestamppb.Timestamp)(nil),  // 10: google.protobuf.Timestamp
 }
 var file_transistor_v1_transistor_proto_depIdxs = []int32{
-	7,  // 0: transistor.v1.PublishRequest.topic:type_name -> google.protobuf.StringValue
-	8,  // 1: transistor.v1.PublishRequest.topic_id:type_name -> google.protobuf.BytesValue
-	0,  // 2: transistor.v1.PublishRequest.method:type_name -> transistor.v1.Method
-	9,  // 3: transistor.v1.PublishRequest.data:type_name -> google.protobuf.Any
-	10, // 4: transistor.v1.PublishRequest.timestamp:type_name -> google.protobuf.Timestamp
-	7,  // 5: transistor.v1.SubscribeResponse.topic:type_name -> google.protobuf.StringValue
-	8,  // 6: transistor.v1.SubscribeResponse.topic_id:type_name -> google.protobuf.BytesValue
-	0,  // 7: transistor.v1.SubscribeResponse.method:type_name -> transistor.v1.Method
-	9,  // 8: transistor.v1.SubscribeResponse.data:type_name -> google.protobuf.Any
-	10, // 9: transistor.v1.SubscribeResponse.timestamp:type_name -> google.protobuf.Timestamp
-	5,  // 10: transistor.v1.TransistorService.Command:input_type -> transistor.v1.CommandRequest
-	1,  // 11: transistor.v1.TransistorService.Publish:input_type -> transistor.v1.PublishRequest
-	3,  // 12: transistor.v1.TransistorService.Subscribe:input_type -> transistor.v1.SubscribeRequest
-	6,  // 13: transistor.v1.TransistorService.Command:output_type -> transistor.v1.CommandResponse
-	2,  // 14: transistor.v1.TransistorService.Publish:output_type -> transistor.v1.PublishResponse
-	4,  // 15: transistor.v1.TransistorService.Subscribe:output_type -> transistor.v1.SubscribeResponse
-	13, // [13:16] is the sub-list for method output_type
-	10, // [10:13] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	8,  // 0: transistor.v1.Message.topic:type_name -> google.protobuf.StringValue
+	8,  // 1: transistor.v1.Message.topic_id:type_name -> google.protobuf.StringValue
+	0,  // 2: transistor.v1.Message.method:type_name -> transistor.v1.Method
+	9,  // 3: transistor.v1.Message.data:type_name -> google.protobuf.Any
+	10, // 4: transistor.v1.Message.timestamp:type_name -> google.protobuf.Timestamp
+	1,  // 5: transistor.v1.PublishRequest.msg:type_name -> transistor.v1.Message
+	1,  // 6: transistor.v1.SubscribeResponse.msg:type_name -> transistor.v1.Message
+	6,  // 7: transistor.v1.TransistorService.Command:input_type -> transistor.v1.CommandRequest
+	2,  // 8: transistor.v1.TransistorService.Publish:input_type -> transistor.v1.PublishRequest
+	4,  // 9: transistor.v1.TransistorService.Subscribe:input_type -> transistor.v1.SubscribeRequest
+	7,  // 10: transistor.v1.TransistorService.Command:output_type -> transistor.v1.CommandResponse
+	3,  // 11: transistor.v1.TransistorService.Publish:output_type -> transistor.v1.PublishResponse
+	5,  // 12: transistor.v1.TransistorService.Subscribe:output_type -> transistor.v1.SubscribeResponse
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_transistor_v1_transistor_proto_init() }
@@ -576,7 +578,7 @@ func file_transistor_v1_transistor_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_transistor_v1_transistor_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PublishRequest); i {
+			switch v := v.(*Message); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -588,7 +590,7 @@ func file_transistor_v1_transistor_proto_init() {
 			}
 		}
 		file_transistor_v1_transistor_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PublishResponse); i {
+			switch v := v.(*PublishRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -600,7 +602,7 @@ func file_transistor_v1_transistor_proto_init() {
 			}
 		}
 		file_transistor_v1_transistor_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubscribeRequest); i {
+			switch v := v.(*PublishResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -612,7 +614,7 @@ func file_transistor_v1_transistor_proto_init() {
 			}
 		}
 		file_transistor_v1_transistor_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubscribeResponse); i {
+			switch v := v.(*SubscribeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -624,7 +626,7 @@ func file_transistor_v1_transistor_proto_init() {
 			}
 		}
 		file_transistor_v1_transistor_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommandRequest); i {
+			switch v := v.(*SubscribeResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -636,6 +638,18 @@ func file_transistor_v1_transistor_proto_init() {
 			}
 		}
 		file_transistor_v1_transistor_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommandRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_transistor_v1_transistor_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommandResponse); i {
 			case 0:
 				return &v.state
@@ -654,7 +668,7 @@ func file_transistor_v1_transistor_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_transistor_v1_transistor_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

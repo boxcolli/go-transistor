@@ -16,6 +16,14 @@ enum Method {
     METHOD_DELETE = 4;
 }
 
+message Message {
+    google.protobuf.StringValue topic = 1;
+    google.protobuf.StringValue topic_id = 2;
+    Method method = 3;
+    google.protobuf.Any data = 4;
+    google.protobuf.Timestamp timestamp = 5;
+}
+
 service TransistorService {
     // Open a new command line interface
     rpc Command(CommandRequest) returns (stream CommandResponse) {}
@@ -29,11 +37,7 @@ service TransistorService {
 }
 
 message PublishRequest {
-    google.protobuf.StringValue topic = 1;
-    google.protobuf.BytesValue topic_id = 2;
-    Method method = 3;
-    google.protobuf.Any data = 4;
-    google.protobuf.Timestamp timestamp = 5;
+    Message msg = 1;
 }
 
 message PublishResponse {
@@ -50,11 +54,7 @@ message SubscribeRequest {
 }
 
 message SubscribeResponse {
-    google.protobuf.StringValue topic = 1;
-    google.protobuf.BytesValue topic_id = 2;
-    Method method = 3;
-    google.protobuf.Any data = 4;
-    google.protobuf.Timestamp timestamp = 5;
+    Message msg = 1;
 }
 
 message CommandRequest {
