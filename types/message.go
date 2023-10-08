@@ -7,11 +7,11 @@ import (
 )
 
 type Message struct {
-	Topic	string
-	TopicId	string
-	Method 	Method
-	Data 	interface{}
-	TP 		time.Time
+	Topic		string
+	Subtopic	string
+	Method 		Method
+	Data 		interface{}
+	TP 			time.Time
 }
 
 func (m *Message) Marshal() *pb.Message {
