@@ -21,6 +21,10 @@ func (*transistorServer) Subscribe(pb.TransistorService_SubscribeServer) error {
 	panic("unimplemented")
 }
 
+func (*transistorServer) Close() {
+	
+}
+
 func NewTransistorServer() pb.TransistorServiceServer {
 	return &transistorServer{}
 }

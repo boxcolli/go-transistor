@@ -1,12 +1,14 @@
 package sinks
 
-import "time"
+import (
+	"github.com/boxcolli/go-transistor/types"
+)
 
-// 
+//
 type Sink interface {
-	Create(topic string, topicId []byte, data interface{}, tp time.Time) error
-	Update(topic string, topicId []byte, data interface{}, tp time.Time) error
-	Delete(topic string, topicId []byte, tp time.Time) error
+	Create(types.Message) error
+	Update(types.Message) error
+	Delete(types.Message) error
 }
 
 type SinkOption struct {
