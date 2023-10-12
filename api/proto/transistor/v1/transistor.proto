@@ -17,11 +17,14 @@ enum Method {
 }
 
 message Message {
-    google.protobuf.StringValue topic = 1;
-    google.protobuf.StringValue subtopic = 2;
-    Method method = 3;
-    google.protobuf.Any data = 4;
-    google.protobuf.Timestamp timestamp = 5;
+    Topic topic = 1;
+    Method method = 2;
+    google.protobuf.Any data = 3;
+    google.protobuf.Timestamp timestamp = 4;
+}
+
+message Topic {
+    repeated string tokens = 1;
 }
 
 service TransistorService {
@@ -45,12 +48,20 @@ message PublishResponse {
 }
 
 message SubscribeRequest {
-    // Cluster name
-    string cname = 1;
+    enum Operation {
+        OPERATION_UNSPECIFIED = 0;
+        OPERATION_ADD = 1;
+        OPERATION_DEL = 2;
+    }
+    message Change {
+        Operation op = 1;
+        repeated Topic topics = 2;
+    }
 
-    // For topic filter
-    repeated string topics = 2;
-    repeated string subtopics = 3;
+    oneof state {
+        string cname = 1;
+        Change change = 2;
+    }
 }
 
 message SubscribeResponse {

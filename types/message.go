@@ -7,8 +7,7 @@ import (
 )
 
 type Message struct {
-	Topic		string
-	Subtopic	string
+	Topic		Topic
 	Method 		Method
 	Data 		interface{}
 	TP 			time.Time

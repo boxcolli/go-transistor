@@ -1,10 +1,9 @@
 package collector
 
-import "github.com/boxcolli/go-transistor/io/reader"
-
+import "github.com/boxcolli/go-transistor/io"
 
 type Collector interface {
-	Work(r *reader.StreamReader) error
-	Stop(r *reader.StreamReader)
+	Work(r *io.StreamReader, call func(e error))
+	Stop(r *io.StreamReader)
 	StopAll()
 }
