@@ -5,12 +5,12 @@ import (
 	"github.com/boxcolli/go-transistor/types"
 )
 
-type channelReader struct {
-	ch chan *types.Message
+type channelStreamReader struct {
+	ch <-chan *types.Message
 }
 
 // Read implements io.StreamReader.
-func (r *channelReader) Read() (*types.Message, error) {
+func (r *channelStreamReader) Read() (*types.Message, error) {
 	m, ok := <-(r.ch)
 	if !ok {
 		return nil, io.ErrClosed
@@ -18,8 +18,8 @@ func (r *channelReader) Read() (*types.Message, error) {
 	return m, nil
 }
 
-func NewChannelReader(ch chan *types.Message) io.StreamReader {
-	return &channelReader{
+func NewChannelStreamReader(ch <-chan *types.Message) io.StreamReader {
+	return &channelStreamReader{
 		ch: ch,
 	}
 }
