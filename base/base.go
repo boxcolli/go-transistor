@@ -7,6 +7,6 @@ import (
 
 type Base interface {
 	Flow(m *types.Message) error
-	Apply(e *emitter.Emitter, f *types.Filter)
-	Delete(e *emitter.Emitter)
+	Apply(e *emitter.Emitter, op types.Operation, topics []types.Topic)
+	// Delete(e *emitter.Emitter)
 }

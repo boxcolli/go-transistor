@@ -1,6 +1,6 @@
 package types
 
-type Method int
+type Method byte
 
 const (
 	MethodUnspecified Method = iota
