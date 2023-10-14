@@ -13,4 +13,3 @@ var (
 type StreamReader interface {
 	Read() (*types.Message, error)
 }
-
