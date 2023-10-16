@@ -1,4 +1,4 @@
-package channel
+package channelreader
 
 import (
 	"testing"

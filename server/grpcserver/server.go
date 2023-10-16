@@ -6,11 +6,6 @@ type transistorServer struct {
 	pb.UnimplementedTransistorServiceServer
 }
 
-// Command implements pb.TransistorServiceServer.
-func (*transistorServer) Command(*pb.CommandRequest, pb.TransistorService_CommandServer) error {
-	panic("unimplemented")
-}
-
 // Publish implements pb.TransistorServiceServer.
 func (*transistorServer) Publish(pb.TransistorService_PublishServer) error {
 	panic("unimplemented")
@@ -21,8 +16,9 @@ func (*transistorServer) Subscribe(pb.TransistorService_SubscribeServer) error {
 	panic("unimplemented")
 }
 
-func (*transistorServer) Close() {
-	
+// Command implements pb.TransistorServiceServer.
+func (*transistorServer) Command(*pb.CommandRequest, pb.TransistorService_CommandServer) error {
+	panic("unimplemented")
 }
 
 func NewTransistorServer() pb.TransistorServiceServer {

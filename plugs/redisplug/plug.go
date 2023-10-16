@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/types"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -15,7 +16,7 @@ type redisPlug struct {
 	prefix string
 
 	// To prevent emitting myself in watch channel
-	me   *plugs.Member
+	me   *types.Member
 	memx sync.RWMutex
 
 	w     map[string]chan plugs.Change // Singleton watch channels
