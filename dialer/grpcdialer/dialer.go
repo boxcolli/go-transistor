@@ -21,7 +21,6 @@ type entry struct {
 
 type grpcDialer struct {
 	// grpc request information
-	ctx context.Context
 	opts []grpc.DialOption
 
 	// connection holder
@@ -30,7 +29,7 @@ type grpcDialer struct {
 }
 
 // Dial implements dialer.Dialer.
-func (d *grpcDialer) Dial(m *types.Member) (io.StreamReader, error) {
+func (d *grpcDialer) Dial(ctx context.Context, m *types.Member) (io.StreamReader, error) {
 	var ent = new(entry)
 	{
 		var err error
@@ -39,7 +38,7 @@ func (d *grpcDialer) Dial(m *types.Member) (io.StreamReader, error) {
 			return nil, err
 		}
 		ent.cl = pb.NewTransistorServiceClient(ent.conn)
-		ent.sub, err = ent.cl.Subscribe(d.ctx)	// blocking function
+		ent.sub, err = ent.cl.Subscribe(ctx)	// blocking function
 		if err != nil {
 			return nil, err
 		}
@@ -87,9 +86,8 @@ func (d *grpcDialer) CloseAll() {
 	d.e = map[*types.Member]*entry{}
 }
 
-func NewGrpcDialer(ctx context.Context, opts []grpc.DialOption) dialer.Dialer {
+func NewGrpcDialer(opts []grpc.DialOption) dialer.Dialer {
 	return &grpcDialer{
-		ctx: ctx,
 		opts: opts,
 	}
 }

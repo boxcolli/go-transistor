@@ -1,6 +1,7 @@
 package mockdialer
 
 import (
+	"context"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/dialer"
@@ -25,7 +26,7 @@ func NewMockDialer(m map[*types.Member]io.StreamReader, ch map[*types.Member]cha
 }
 
 // Dial implements dialer.Dialer.
-func (d *mockDialer) Dial(m *types.Member) (io.StreamReader, error) {
+func (d *mockDialer) Dial(ctx context.Context, m *types.Member) (io.StreamReader, error) {
 	d.mx.Lock()
 	defer d.mx.Unlock()
 

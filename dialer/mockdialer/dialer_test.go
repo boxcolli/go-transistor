@@ -1,6 +1,7 @@
 package mockdialer
 
 import (
+	"context"
 	"sync"
 	"testing"
 
@@ -40,7 +41,7 @@ func TestMockDialer(t *testing.T) {
 	for _, v := range ms {
 		go func(m *types.Member) {
 			// Dial()
-			sr, err := d.Dial(m)
+			sr, err := d.Dial(context.Background(), m)
 			if err != nil {
 				return
 			}
