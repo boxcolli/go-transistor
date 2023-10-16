@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrClosed = errors.New("connection closed.")
+	ErrClosed = errors.New("connection closed")
 )
 
 type StreamReader interface {

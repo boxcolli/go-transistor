@@ -10,19 +10,22 @@ import (
 
 type basicCollector struct {
 	b base.Base
+
 	stop map[io.StreamReader]chan bool
-	stopmx sync.Mutex
+	mx sync.Mutex
 }
 
 // Work implements collector.Collector.
-func (c *basicCollector) Work(r io.StreamReader, call func(e error)) {
+func (c *basicCollector) Work(r io.StreamReader) error {
+	// Open a stop signal channel
 	stopch := make(chan bool)
 	{
-		c.stopmx.Lock()
+		c.mx.Lock()
 		c.stop[r] = stopch
-		c.stopmx.Unlock()
+		c.mx.Unlock()
 	}
 
+	// Work
 	stop := false
 	for !stop {
 		select {
@@ -36,18 +39,20 @@ func (c *basicCollector) Work(r io.StreamReader, call func(e error)) {
 			if err != nil {
 				// Stream has an error.
 				stop = true
-				call(err)
+				return err
 			} else {
 				// Send message
 				err := c.b.Flow(m)
 				if err != nil {
 					// Base has an error
 					stop = true
-					call(err)
+					return err
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
 // Stop implements collector.Collector.

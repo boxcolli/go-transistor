@@ -6,11 +6,11 @@ import (
 	"github.com/boxcolli/go-transistor/types"
 )
 
-type Method int
+type Method byte
 
 const (
-	EventPut Method = iota
-	EventDel
+	MethodPut Method = iota
+	MethodDel
 )
 
 type Event struct {
