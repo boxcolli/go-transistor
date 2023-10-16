@@ -7,8 +7,8 @@ import (
 )
 
 type basicEmitter struct {
-	q		chan *types.Message
-	stop	chan bool
+	q    chan *types.Message
+	stop chan bool
 }
 
 // Work implements emitter.Emitter.
@@ -37,18 +37,18 @@ func (e *basicEmitter) Work(w io.StreamWriter) error {
 }
 
 // Stop implements emitter.Emitter.
-func (*basicEmitter) Stop() {
-	panic("unimplemented")
+func (e *basicEmitter) Stop() {
+	e.stop <- true
 }
 
 // Emit implements emitter.Emitter.
-func (*basicEmitter) Emit(m *types.Message) {
-	panic("unimplemented")
+func (e *basicEmitter) Emit(m *types.Message) {
+	e.q <- m
 }
 
 func NewBasicEmitter(qsiz int) emitter.Emitter {
 	return &basicEmitter{
-		q: make(chan *types.Message, qsiz),
+		q:    make(chan *types.Message, qsiz),
 		stop: make(chan bool),
 	}
 }
