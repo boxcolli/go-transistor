@@ -9,7 +9,8 @@ import (
 
 func TestBasicFormatter(t *testing.T) {
 	prefix := "test"
-	f := NewBasicFormatter(prefix)
+	delimiter := "#"
+	f := NewBasicFormatter(prefix, delimiter)
 
 	member := types.Member{
 		Cname: "c0",
@@ -29,14 +30,14 @@ func TestBasicFormatter(t *testing.T) {
 
 	{
 		m := types.Member{}
-		f.ScanKey([]byte(key), &m)
+		f.ScanKey(key, &m)
 		assert.Equal(t, member.Cname, m.Cname)
 		assert.Equal(t, member.Name, m.Name)
 	}
 
 	{
 		m := types.Member{}
-		f.ScanValue([]byte(value), &m)
+		f.ScanValue(value, &m)
 		assert.Equal(t, member.Pro, m.Pro)
 		assert.Equal(t, member.Host, m.Host)
 		assert.Equal(t, member.Port, m.Port)

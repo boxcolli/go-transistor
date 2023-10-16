@@ -1,14 +1,14 @@
 package types
 
-type Protocol byte
+type Protocol string
 
 func (p Protocol) String() string {
 	return string(p) // not Ascii value, same bit value as byte.
 }
 
 const (
-	ProtocolUnspecified Protocol = iota
-	ProtocolGrpc
+	ProtocolUnspecified = "nil"
+	ProtocolGrpc = "grpc"
 )
 
 type Member struct {
