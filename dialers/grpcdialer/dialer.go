@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
-	"github.com/boxcolli/go-transistor/dialer"
+	"github.com/boxcolli/go-transistor/dialers"
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/io/reader/grpcreader"
 	"github.com/boxcolli/go-transistor/types"
@@ -26,6 +26,12 @@ type grpcDialer struct {
 	// connection holder
 	e map[*types.Member]*entry
 	emx sync.Mutex
+}
+
+func NewGrpcDialer(opts []grpc.DialOption) dialers.Dialer {
+	return &grpcDialer{
+		opts: opts,
+	}
 }
 
 // Dial implements dialer.Dialer.
@@ -84,10 +90,4 @@ func (d *grpcDialer) CloseAll() {
 
 	// Wipe out member set
 	d.e = map[*types.Member]*entry{}
-}
-
-func NewGrpcDialer(opts []grpc.DialOption) dialer.Dialer {
-	return &grpcDialer{
-		opts: opts,
-	}
 }

@@ -4,12 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/boxcolli/go-transistor/dialer"
+	"github.com/boxcolli/go-transistor/dialers"
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/io/reader/channelreader"
 	"github.com/boxcolli/go-transistor/types"
 )
-
 
 type mockDialer struct {
 	m map[*types.Member]io.StreamReader
@@ -17,7 +16,7 @@ type mockDialer struct {
 	ch map[*types.Member]chan *types.Message
 }
 
-func NewMockDialer(m map[*types.Member]io.StreamReader, ch map[*types.Member]chan *types.Message) dialer.Dialer {
+func NewMockDialer(m map[*types.Member]io.StreamReader, ch map[*types.Member]chan *types.Message) dialers.Dialer {
 	return &mockDialer{
 		m: m,
 		ch: ch,

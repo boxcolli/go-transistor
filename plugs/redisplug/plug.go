@@ -10,17 +10,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type entry struct {
+	ch		chan *plugs.Event	// Singleton watch channels
+	stop	chan bool			// Channels connected with watch goroutines
+}
+
 type redisPlug struct {
 	client *redis.Client
-	f      plugs.Formatter
+	f      RedisFormatter
 
 	// To prevent emitting myself in watch channel
 	me   *types.Member
 	memx sync.RWMutex
 
-	ch   map[string]chan *plugs.Event // Singleton watch channels
-	stop map[string]chan bool         // Channels connected with watch goroutines
-	chmx sync.Mutex
+	// Per cluster entries
+	e   map[string]entry
+	emx sync.Mutex
 }
 
 /*
@@ -28,25 +33,24 @@ type redisPlug struct {
 		__keyspace@<db>__:<key>
 	Use NewBasicRedisFormatter() or customized formatter for redis.
 */
-func NewRedisPlug(client *redis.Client, f plugs.Formatter) plugs.Plug {
+func NewRedisPlug(client *redis.Client, f RedisFormatter) plugs.Plug {
 	return &redisPlug{
 		client: client,
 		f: f,
 		me: nil,
 		memx: sync.RWMutex{},
-		ch: make(map[string]chan *plugs.Event),
-		stop: make(map[string]chan bool),
-		chmx: sync.Mutex{},
+		e: make(map[string]entry),
+		emx: sync.Mutex{},
 	}
 }
 
 const (
 	eventSet = "set"
 	eventDel = "del"
-	eventExp = "expire"
+	eventExp = "expired"
 )
 
-// Me implements plugs.Plug.
+// Me implements plug.Plug.
 func (p *redisPlug) Me(ctx context.Context, op types.Operation, me *types.Member) error {
 	p.memx.Lock()
 	defer p.memx.Unlock()
@@ -73,23 +77,28 @@ func (p *redisPlug) Me(ctx context.Context, op types.Operation, me *types.Member
 	return nil
 }
 
-// Watch implements plugs.Plug.
+// Watch implements plug.Plug.
 func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *plugs.Event, error) {
-	p.chmx.Lock()
-	defer p.chmx.Unlock()
+	p.emx.Lock()
+	defer p.emx.Unlock()
 
-	if ch, ok := p.ch[cname]; ok {
+	if ent, ok := p.e[cname]; ok {
 		// There is already a watch channel
-		return ch, nil
+		return ent.ch, nil
 	}
 
-	var watch <-chan *redis.Message
+	var watch	<-chan *redis.Message
+	var ch		chan *plugs.Event
+	var stop 	chan bool
 	{
-		pubsub := p.client.PSubscribe(context.Background(), p.f.PrintKeyspace(cname))
+		pubsub := p.client.PSubscribe(context.Background(), p.f.PrintPSubscribeKeyspace(cname))
 		watch = pubsub.Channel()
+
+		ch = make(chan *plugs.Event, size)
+		stop = make(chan bool)
+
+		p.e[cname] = entry{ ch: ch, stop: stop }
 	}
-	ch := make(chan *plugs.Event, size)
-	stop := make(chan bool)
 
 	// Before issuing new events, push already existing KVs.
 	{
@@ -97,6 +106,10 @@ func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *
 		if err != nil {
 			return nil, err
 		}
+
+		p.memx.RLock()
+		me := p.me
+		p.memx.RUnlock()
 
 		for _, key := range res {
 			value, err := p.client.Get(ctx, key).Result()
@@ -107,120 +120,103 @@ func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *
 			e.Op = types.OperationAdd
 			p.f.ScanKey(key, &e.Data)
 			p.f.ScanValue(value, &e.Data)
+
+			// Skip if it's me
+			if me != nil && me.EqualsId(e.Data) {
+				continue
+			}
+			
 			ch <- e
 		}
 	}
 
-	go func(watch <-chan *redis.Message, ch chan<- *plugs.Event, stop <-chan bool) {
-		for {
-			select {
-				// Stop watching changes
-			case <- stop:
-				return
-
-			case msg, ok := <- watch:
-				if !ok {
-					// Something went wrong.
-					defer p.Stop(cname)
-					return
-				}
-
-				key := strings.SplitN(msg.Channel, ":", 2)[1]
-
-				// Fetch events
-				switch msg.Payload {
-				case eventSet:
-					value, err := p.client.Get(ctx, key).Result()
-					if err != nil {
-						// ignore error
-						continue
-					}
-
-					e := new(plugs.Event)
-					e.Op = types.OperationAdd
-					p.f.ScanKey(key, &e.Data)
-					p.f.ScanValue(value, &e.Data)
-
-					// Discard if it's me
-					p.memx.RLock()
-					if p.me != nil &&
-						p.me.Cname == e.Data.Cname &&
-						p.me.Name == e.Data.Name {
-						p.memx.RUnlock()
-						continue
-					}
-					p.memx.RUnlock()
-
-					ch <- e
-
-				case eventDel:
-					e := new(plugs.Event)
-					e.Op = types.OperationDel
-					p.f.ScanKey(key, &e.Data)
-
-					// Discard if it's me
-					p.memx.RLock()
-					if p.me != nil &&
-						p.me.Cname == e.Data.Cname &&
-						p.me.Name == e.Data.Name {
-						p.memx.RUnlock()
-						continue
-					}
-					p.memx.RUnlock()
-
-					ch <- e
-				
-				case eventExp:	// pretend it's delete
-					e := new(plugs.Event)
-					e.Op = types.OperationDel
-					p.f.ScanKey(key, &e.Data)
-
-					// Discard if it's me
-					p.memx.RLock()
-					if p.me != nil &&
-						p.me.Cname == e.Data.Cname &&
-						p.me.Name == e.Data.Name {
-						p.memx.RUnlock()
-						continue
-					}
-					p.memx.RUnlock()
-
-					ch <- e
-				}
-			}
-		}
-	} (watch, ch, stop)
-
-	p.ch[cname] = ch
-	p.stop[cname] = stop
+	go p.watch(ctx, cname, watch, ch, stop)
 
 	return ch, nil
 }
 
+func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis.Message, ch chan<- *plugs.Event, stop <-chan bool) {
+	for {
+		select {
+			// Stop watching changes
+		case <- stop:
+			return
+
+		case msg, ok := <- watch:
+			if !ok {
+				// Something went wrong.
+				defer p.Stop(cname)
+				return
+			}
+
+			key := strings.SplitN(msg.Channel, ":", 2)[1]
+			e := new(plugs.Event)
+			{
+				p.f.ScanKey(key, &e.Data)
+
+				p.memx.RLock()
+				me := p.me
+				p.memx.RUnlock()
+
+				// Discard if it's me
+				if me != nil && me.EqualsId(e.Data) {
+					continue
+				}
+			}
+
+			// Fetch events
+			switch msg.Payload {
+			case eventSet:
+				value, err := p.client.Get(ctx, key).Result()
+				if err != nil {
+					// ignore error
+					continue
+				}
+
+				e.Op = types.OperationAdd
+				p.f.ScanValue(value, &e.Data)
+
+				ch <- e
+
+			case eventDel:
+				e.Op = types.OperationDel
+				p.f.ScanKey(key, &e.Data)
+
+				ch <- e
+			
+			case eventExp:	// pretend it's delete
+				e := new(plugs.Event)
+				e.Op = types.OperationDel
+				p.f.ScanKey(key, &e.Data)
+
+				ch <- e
+			}
+		}
+	}
+}
+
 // Stop implements plugs.Plug.
 func (p *redisPlug) Stop(cname string) {
-	p.chmx.Lock()
-	defer p.chmx.Unlock()
+	p.emx.Lock()
+	defer p.emx.Unlock()
 	
-	if _, ok := p.ch[cname]; ok {
-		p.stop[cname] <- true
-		delete(p.ch, cname)
-		delete(p.stop, cname)
+	if ent, ok := p.e[cname]; ok {
+		close(ent.ch)
+		close(ent.stop)
+		delete(p.e, cname)
 	}
 }
 
 // Close implements plugs.Plug.
 func (p *redisPlug) Close() {
-	p.chmx.Lock()
-	defer p.chmx.Unlock()
+	p.emx.Lock()
+	defer p.emx.Unlock()
 
-	for _, v := range p.stop {
-		v <- true
+	for _, ent := range p.e {
+		close(ent.stop)
+		close(ent.ch)
 	}
-	for _, v := range p.ch {
-		close(v)
-	}
+
 	p.client.Close()
-	p.ch = make(map[string]chan *plugs.Event)
-	p.stop = make(map[string]chan bool)
+	p.e = make(map[string]entry)
 }

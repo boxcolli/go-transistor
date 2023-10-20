@@ -9,10 +9,15 @@ import (
 )
 
 /*
-	Keyspace	__keyspace@<DB>__:_PREFIX_:_CNAME_:
+	Keyspace	__keyspace@<DB>__:_PREFIX_:_CNAME_:*
 	Key			_PREFIX_:_CNAME_:_NAME_
 	Value		_PRO_:_HOST_:_PORT_
 */
+
+type RedisFormatter interface {
+	plugs.Formatter
+	PrintPSubscribeKeyspace(cname string) string
+}
 
 type redisFormatter struct {
 	channel	string
@@ -20,7 +25,7 @@ type redisFormatter struct {
 	delim	string
 }
 
-func NewBasicRedisFormatter(dbnum, prefix, delim string) plugs.Formatter {
+func NewBasicRedisFormatter(dbnum, prefix, delim string) RedisFormatter {
 	return &redisFormatter{
 		channel: fmt.Sprintf("__keyspace@%s__:", dbnum),
 		prefix: prefix,
@@ -28,9 +33,13 @@ func NewBasicRedisFormatter(dbnum, prefix, delim string) plugs.Formatter {
 	}
 }
 
+func (f *redisFormatter) PrintPSubscribeKeyspace(cname string) string {
+	return f.channel + f.prefix + f.delim + cname + f.delim + "*"
+}
+
 // PrintKeyspace implements plugs.Formatter.
 func (f *redisFormatter) PrintKeyspace(cname string) string {
-	return f.channel + f.prefix + f.delim + cname + f.delim
+	return f.prefix + f.delim + cname + f.delim + "*"
 }
 
 // PrintKey implements plugs.Formatter.
@@ -47,7 +56,7 @@ func (f *redisFormatter) PrintValue(m *types.Member) string {
 func (f *redisFormatter) ScanKey(key string, m *types.Member) {
 	tokens := strings.Split(key, f.delim)
 	m.Cname = tokens[1]
-	m.Cname = tokens[2]
+	m.Name = tokens[2]
 }
 
 // ScanValue implements Formatter.

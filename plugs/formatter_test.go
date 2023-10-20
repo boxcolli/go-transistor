@@ -24,10 +24,12 @@ func TestBasicFormatter(t *testing.T) {
 	key := prefix + delimiter + member.Cname + delimiter + member.Name
 	value := string(member.Pro) + delimiter + member.Host + delimiter + member.Port
 
+	// Print
 	assert.Equal(t, keyspace, f.PrintKeyspace(member.Cname))
 	assert.Equal(t, key, f.PrintKey(&member))
 	assert.Equal(t, value, f.PrintValue(&member))
 
+	// ScanKey
 	{
 		m := types.Member{}
 		f.ScanKey(key, &m)
@@ -35,6 +37,7 @@ func TestBasicFormatter(t *testing.T) {
 		assert.Equal(t, member.Name, m.Name)
 	}
 
+	// ScanValue
 	{
 		m := types.Member{}
 		f.ScanValue(value, &m)

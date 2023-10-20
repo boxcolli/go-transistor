@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/redis/go-redis/v9 v9.2.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	go.etcd.io/etcd/server/v3 v3.5.9
 	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.31.0
