@@ -1,8 +1,16 @@
 package basicconductor
 
-import "context"
+import (
+	"context"
+
+	"github.com/boxcolli/go-transistor/types"
+)
 
 type Option struct {
-	WatchContext		context.Context
+	GetWatchContext		func() context.Context
 	WatchChannelSize 	int
+
+	GetDialContext		func() context.Context
+
+	DefaultChange		*types.Change
 }

@@ -6,5 +6,5 @@ import (
 
 type Event struct {
 	Op		types.Operation
-	Data	types.Member
+	Data	*types.Member
 }

@@ -25,7 +25,7 @@ type grpcDialer struct {
 
 	// connection holder
 	e map[*types.Member]*entry
-	emx sync.Mutex
+	emx sync.RWMutex
 }
 
 func NewGrpcDialer(opts []grpc.DialOption) dialers.Dialer {
@@ -35,26 +35,62 @@ func NewGrpcDialer(opts []grpc.DialOption) dialers.Dialer {
 }
 
 // Dial implements dialer.Dialer.
-func (d *grpcDialer) Dial(ctx context.Context, m *types.Member) (io.StreamReader, error) {
+func (d *grpcDialer) Dial(ctx context.Context, m *types.Member, c *types.Change) (io.StreamReader, error) {
+	d.emx.Lock()
+	defer d.emx.Unlock()
+
+	if ent, ok := d.e[m]; ok {
+		return ent.sr, nil
+	}
+
 	var ent = new(entry)
 	{
 		var err error
+		// Create connection
 		ent.conn, err = grpc.Dial(m.Address(), d.opts...)
 		if err != nil {
 			return nil, err
 		}
+
+		// Create client
 		ent.cl = pb.NewTransistorServiceClient(ent.conn)
+
+		// Call RPC
 		ent.sub, err = ent.cl.Subscribe(ctx)	// blocking function
 		if err != nil {
 			return nil, err
 		}
+
+		// Send initial Change
+		if c != nil {
+			req := &pb.SubscribeRequest{
+				Change: c.Marshal(),
+			}
+			err := ent.sub.Send(req)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Create a StreamReader
 		ent.sr = grpcreader.NewGrpcClientStream(ent.sub)
 	}
 
-	d.emx.Lock()
 	d.e[m] = ent
-	d.emx.Unlock()
+	
 	return ent.sr, nil
+}
+
+func (d *grpcDialer) Apply(m *types.Member, c *types.Change) error {
+	d.emx.RLock()
+	defer d.emx.RUnlock()
+
+	ent, ok := d.e[m]
+	if !ok {
+		return dialers.ErrMemberNotFound
+	}
+
+	return ent.sub.Send(&pb.SubscribeRequest{ Change: c.Marshal() })
 }
 
 // Stop implements dialer.Dialer.
