@@ -7,22 +7,20 @@ import (
 )
 
 type basicEmitter struct {
-	q		chan *types.Message
-	stop	chan bool
+	q    chan *types.Message
+	stop chan bool
 }
 
 // Work implements emitter.Emitter.
 func (e *basicEmitter) Work(w io.StreamWriter) error {
-	stop := false
-	for !stop {
+	for {
 		select {
-		case <-e.stop:
+		case <- e.stop:
 			// Stop working
-			stop = true
+			return nil
 
-		default:
+		case m, ok := <-e.q:
 			// Work
-			m, ok := <-e.q
 			if !ok {
 				return emitter.ErrClosed
 			}
@@ -32,23 +30,21 @@ func (e *basicEmitter) Work(w io.StreamWriter) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // Stop implements emitter.Emitter.
-func (*basicEmitter) Stop() {
-	panic("unimplemented")
+func (e *basicEmitter) Stop() {
+	close(e.stop)
 }
 
 // Emit implements emitter.Emitter.
-func (*basicEmitter) Emit(m *types.Message) {
-	panic("unimplemented")
+func (e *basicEmitter) Emit(m *types.Message) {
+	e.q <- m
 }
 
 func NewBasicEmitter(qsiz int) emitter.Emitter {
 	return &basicEmitter{
-		q: make(chan *types.Message, qsiz),
+		q:    make(chan *types.Message, qsiz),
 		stop: make(chan bool),
 	}
 }
