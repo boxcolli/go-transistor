@@ -13,16 +13,14 @@ type basicEmitter struct {
 
 // Work implements emitter.Emitter.
 func (e *basicEmitter) Work(w io.StreamWriter) error {
-	stop := false
-	for !stop {
+	for {
 		select {
-		case <-e.stop:
+		case <- e.stop:
 			// Stop working
-			stop = true
+			return nil
 
-		default:
+		case m, ok := <-e.q:
 			// Work
-			m, ok := <-e.q
 			if !ok {
 				return emitter.ErrClosed
 			}
@@ -32,13 +30,11 @@ func (e *basicEmitter) Work(w io.StreamWriter) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 // Stop implements emitter.Emitter.
 func (e *basicEmitter) Stop() {
-	e.stop <- true
+	close(e.stop)
 }
 
 // Emit implements emitter.Emitter.
