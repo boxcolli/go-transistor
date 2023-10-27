@@ -11,7 +11,7 @@ import (
 
 // structs
 type indexNode struct {
-	Emitters []emitter.Emitter
+	Emitters map[emitter.Emitter]bool
 	Childs   map[string]*indexNode
 }
 
@@ -81,6 +81,10 @@ func (b *basicBase) changeLoop() {
 }
 
 func (b *basicBase) changeAdd(emitter emitter.Emitter, topic types.Topic) {
+	if topic == nil {
+		return
+	}
+
 	panic("unimplemented")
 }
 
