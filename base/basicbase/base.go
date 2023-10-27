@@ -1,6 +1,7 @@
 package basicbase
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -9,15 +10,20 @@ import (
 )
 
 type indexNode struct {
-	emitters []*emitter.Emitter
-	childs   map[string]*indexNode
+	Emitters []*emitter.Emitter
+	Childs   map[string]*indexNode
+}
+
+type ecg struct {
+	Emitter *emitter.Emitter
+	Cg      *types.Change
 }
 
 type basicBase struct {
 	i       map[string]*indexNode
 	icopy   map[string]*indexNode
 	imx     sync.RWMutex
-	changes chan *types.Change
+	changes chan *ecg
 }
 
 func NewBasicBase() base.Base {
@@ -25,7 +31,7 @@ func NewBasicBase() base.Base {
 }
 
 func (b *basicBase) Start() {
-	b.changes = make(chan *types.Change)
+	b.changes = make(chan *ecg)
 	go b.changeLoop()
 }
 
@@ -34,6 +40,20 @@ func (b *basicBase) Stop() {
 }
 
 func (b *basicBase) changeLoop() {
+	stop := false
+	for !stop {
+		select {
+		case cg := <-b.changes:
+			b.imx.RLock()
+			switch cg.Cg.Op {
+			case types.OperationAdd:
+				fmt.Print("Add")
+			case types.OperationDel:
+				fmt.Print("Del")
+			}
+			b.imx.Unlock()
+		}
+	}
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
@@ -41,9 +61,15 @@ func (b *basicBase) Flow(m *types.Message) error {
 }
 
 func (b *basicBase) Apply(e *emitter.Emitter, cg *types.Change) {
-	panic("unimplemented")
+	b.changes <- &ecg{
+		e,
+		cg,
+	}
 }
 
 func (b *basicBase) Delete(e *emitter.Emitter) {
-	panic("unimplemented")
+	b.Apply(e, &types.Change{
+		Op:     types.OperationDel,
+		Topics: nil,
+	})
 }
