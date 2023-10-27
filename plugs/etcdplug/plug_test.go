@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/types"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/server/v3/embed"
@@ -17,9 +18,6 @@ import (
 
 func TestEtcdPlug(t *testing.T) {
 	var etcd, client = createEtcdServer()
-	var members = []plugs.Member{}
-	var prefix = "local"
-	var cname = "c0"
 	{
 		if etcd == nil {
 			t.Fatal("cannot create etcd embed server.")
@@ -33,94 +31,157 @@ func TestEtcdPlug(t *testing.T) {
 		defer etcd.Server.Stop()
 	}
 
-	var plug plugs.Plug
+	var (
+		prefix = "local"
+		delim = "#"
+		cname = "c0"
+		plug plugs.Plug
+		formatter plugs.Formatter
+	)
 	{
-		plug = NewEtcdPlug(client, prefix)
+		formatter = plugs.NewBasicFormatter(prefix, delim)
+		plug = NewEtcdPlug(client, formatter)
 	}
 
-	// Read
+	var members = []types.Member{}
 	{
-		_, err := client.Put(context.Background(), "local:c0:n0", "0:0")
-		assert.NoError(t, err)
-
-		members = append(members, plugs.Member{
+		members = append(members, types.Member{
 			Cname: "c0",
 			Name: "n0",
+			Pro: types.ProtocolGrpc,
 			Host: "0",
 			Port: "0",
 		})
-		ms, err := plug.Read(context.Background(), cname)
+	}
+	{
+		_, err := client.Put(
+			context.Background(),
+			formatter.PrintKey(&members[0]),
+			formatter.PrintValue(&members[0]),
+		)
 		assert.NoError(t, err)
-		t.Log("ms:", ms)
-		assert.Equal(t, true, reflect.DeepEqual(members, ms))
 	}
 
 	// Watch & Stop
 	{
-		change := plug.Watch(context.Background(), cname, 100)
-		cs := []plugs.Change{}
+		// Watch
+		ch, err := plug.Watch(context.Background(), cname, 100)
+		assert.NoError(t, err)
+		es := []plugs.Event{}
 		go func() {
-			for ch := range change {
-				cs = append(cs, ch)
+			for e := range ch {
+				es = append(es, *e)
 			}
-		}()
+		} ()
 
-		changes := []plugs.Change{
+		// Expected
+		m := types.Member{
+			Cname: "c0",
+			Name: "n1",
+			Pro: types.ProtocolGrpc,
+			Host: "1",
+			Port: "1",
+		}
+		members = append(members, m)
+		events := []plugs.Event{
 			{
-				Method: plugs.MethodPut,
-				Data: plugs.Member{
-					Cname: "c0",
-					Name: "n1",
-					Host: "1",
-					Port: "1",
-				},
+				Op: types.OperationAdd,
+				Data: members[0],
 			},
 			{
-				Method: plugs.MethodDel,
-				Data: plugs.Member{
-					Cname: "c0",
-					Name: "n1",
-					Host: "",
-					Port: "",
+				Op: types.OperationAdd,
+				Data: m,
+			},
+			{
+				Op: types.OperationDel,
+				Data: &types.Member{
+					Cname: m.Cname,
+					Name: m.Name,
 				},
 			},
 		}
-		_, err := client.Put(context.Background(), "local:c0:n1", "1:1")
-		assert.NoError(t, err)
-		_, err = client.Delete(context.Background(), "local:c0:n1")
+
+		// Put member
+		_, err = client.Put(
+			context.Background(),
+			formatter.PrintKey(&m),
+			formatter.PrintValue(&m),
+		)
 		assert.NoError(t, err)
 
-		time.Sleep(time.Second * 1)	// It takes time to detect changes
+		// Delete member
+		_, err = client.Delete(context.Background(), formatter.PrintKey(&m))
+		assert.NoError(t, err)
+
+		// Assert
+		time.Sleep(time.Second * 2)	// It takes time to detect changes
 		plug.Stop(cname)
-		t.Log("cs:", cs)
-		assert.Equal(t, true, reflect.DeepEqual(changes, cs))
+		assert.Equal(t, true, reflect.DeepEqual(events, es))
+		t.Log("watch actual events", es)
+		t.Log("watch actual events len(es)", len(es))
 	}
 
-	// Advertise
-	{
-		change := plug.Watch(context.Background(), cname, 100)
-		cs := []plugs.Change{}
-		go func() {
-			for ch := range change {
-				cs = append(cs, ch)
-			}
-		}()
+	// Clear the etcd database
+	_, err := client.Delete(context.Background(), "", clientv3.WithPrefix())
+	assert.NoError(t, err)
 
-		m := plugs.Member{
+	// Me
+	{
+		// Watch
+		es := []plugs.Event{}
+		{
+			ch, err := plug.Watch(context.Background(), cname, 100)
+			assert.NoError(t, err)
+			go func() {
+				for e := range ch {
+					es = append(es, *e)
+				}
+			}()
+		}
+
+		me := &types.Member{
+			Cname: "c",
 			Name: "2",
+			Pro: types.ProtocolGrpc,
 			Host: "2",
 			Port: "2",
 		}
-		err := plug.Advertise(context.Background(), cname, m)
-		assert.NoError(t, err)
 
-		plug.Stop(cname)
-		assert.Zero(t, len(cs))
+		// Add me
+		{
+			err := plug.Me(context.Background(), types.OperationAdd, me)
+			assert.NoError(t, err)
+	
+			// Assert
+			plug.Stop(cname)
+			time.Sleep(1 * time.Second)
+			assert.Zero(t, len(es))
+			t.Log("Add me watch events",es)
+	
+			res, err := client.Get(context.Background(), formatter.PrintKey(me))
+			assert.NoError(t, err)
+			for _, kv := range res.Kvs {
+				m := new(types.Member)
+				formatter.ScanKey(string(kv.Key), m)
+				formatter.ScanValue(string(kv.Value), m)
+				assert.Equal(t, true, reflect.DeepEqual(me, m))
+			}
+		}
+
+		// Delete me
+		{
+			err := plug.Me(context.Background(), types.OperationDel, nil)
+			assert.NoError(t, err)
+			
+			res, err := client.Get(context.Background(), formatter.PrintKey(me))
+			assert.NoError(t, err)
+			assert.Zero(t, len(res.Kvs))
+		}
 	}
 
-	// Destroy
+	// Close
 	{
-		plug.Destroy()
+		plug.Close()
 		
 		conn := client.ActiveConnection()
 		assert.Equal(t, connectivity.Shutdown, conn.GetState())

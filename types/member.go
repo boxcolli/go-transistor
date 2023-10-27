@@ -1,14 +1,14 @@
 package types
 
-type Protocol byte
+type Protocol string
 
 func (p Protocol) String() string {
 	return string(p) // not Ascii value, same bit value as byte.
 }
 
 const (
-	ProtocolUnspecified Protocol = iota
-	ProtocolGrpc
+	ProtocolUnspecified = "nil"
+	ProtocolGrpc = "grpc"
 )
 
 type Member struct {
@@ -21,4 +21,22 @@ type Member struct {
 
 func (m Member) Address() string {
 	return m.Host + ":" + m.Port
+}
+
+func (m Member) EqualsId(x Member) bool {
+	if m.Cname == x.Cname && m.Name == x.Name {
+		return true
+	}
+	return false
+}
+
+func (m Member) Equals(x Member) bool {
+	if m.Cname == x.Cname &&
+		m.Name == x.Name &&
+		m.Pro == x.Pro &&
+		m.Host == x.Host &&
+		m.Port == x.Port {
+		return true
+	}
+	return false
 }

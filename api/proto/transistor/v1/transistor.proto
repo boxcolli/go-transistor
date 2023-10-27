@@ -4,9 +4,15 @@ package transistor.v1;
 
 option go_package = "./pb";
 
-import "google/protobuf/wrappers.proto";
+// import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
+
+enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_ADD = 1;
+    OPERATION_DEL = 2;
+}
 
 enum Method {
     METHOD_UNSPECIFIED = 0;
@@ -16,6 +22,10 @@ enum Method {
     METHOD_DELETE = 4;
 }
 
+message Topic {
+    repeated string tokens = 1;
+}
+
 message Message {
     Topic topic = 1;
     Method method = 2;
@@ -23,8 +33,9 @@ message Message {
     google.protobuf.Timestamp timestamp = 4;
 }
 
-message Topic {
-    repeated string tokens = 1;
+message Change {
+    Operation op = 1;
+    repeated Topic topics = 2;
 }
 
 service TransistorService {
@@ -48,20 +59,7 @@ message PublishResponse {
 }
 
 message SubscribeRequest {
-    enum Operation {
-        OPERATION_UNSPECIFIED = 0;
-        OPERATION_ADD = 1;
-        OPERATION_DEL = 2;
-    }
-    message Change {
-        Operation op = 1;
-        repeated Topic topics = 2;
-    }
-
-    oneof state {
-        string cname = 1;
-        Change change = 2;
-    }
+    Change change = 1;
 }
 
 message SubscribeResponse {

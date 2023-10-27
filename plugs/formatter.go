@@ -1,6 +1,8 @@
 package plugs
 
 import (
+	"strings"
+
 	"github.com/boxcolli/go-transistor/types"
 )
 
@@ -9,77 +11,54 @@ type Formatter interface {
 	PrintKey(m *types.Member) string
 	PrintValue(m *types.Member) string
 
-	ScanKey(key []byte, m *types.Member)
-	ScanValue(value []byte, m *types.Member)
-}
-
-type basicFormatter struct {
-	prefix string
-}
-
-func NewBasicFormatter(prefix string) Formatter {
-	return &basicFormatter{prefix: prefix}
+	ScanKey(key string, m *types.Member)
+	ScanValue(value string, m *types.Member)
 }
 
 /*
 	Key		_PREFIX_:_CNAME_:_NAME_
 	Value	_PRO_:_HOST_:_PORT_
 */
+type basicFormatter struct {
+	prefix	string
+	delim	string
+	delimByte byte
+}
 
-const (
-	delimiter = "#"
-	delimiterByte = byte('#')
-)
+func NewBasicFormatter(prefix string, delim string) Formatter {
+	return &basicFormatter{
+		prefix: prefix,
+		delim: delim,
+		delimByte: byte(delim[0]),
+	}
+}
 
 // PrintKeyspace implements Formatter.
 func (f *basicFormatter) PrintKeyspace(cname string) string {
-	return f.prefix + delimiter + cname + delimiter
+	return f.prefix + f.delim + cname + f.delim
 }
 
 // PrintKey implements Formatter.
 func (f *basicFormatter) PrintKey(m *types.Member) string {
-	return f.prefix + delimiter + m.Cname + delimiter + m.Name
+	return f.prefix + f.delim + m.Cname + f.delim + m.Name
 }
 
 // PrintValue implements Formatter.
-func (*basicFormatter) PrintValue(m *types.Member) string {
-	return m.Pro.String() + delimiter + m.Host + delimiter + m.Port
+func (f *basicFormatter) PrintValue(m *types.Member) string {
+	return m.Pro.String() + f.delim + m.Host + f.delim + m.Port
 }
 
 // ScanKey implements Formatter.
-func (*basicFormatter) ScanKey(key []byte, m *types.Member) {
-	lo, hi := 0, 0
-	hi = next(key, hi) // discard prefix
-	
-	lo = hi + 1
-	hi = next(key, hi + 1)
-	m.Cname = string(key[lo:hi])
-
-	lo = hi + 1
-	hi = next(key, hi + 1)
-	m.Name = string(key[lo:hi])
+func (f *basicFormatter) ScanKey(key string, m *types.Member) {
+	tokens := strings.Split(key, f.delim)
+	m.Cname = tokens[1]
+	m.Name = tokens[2]
 }
 
 // ScanValue implements Formatter.
-func (*basicFormatter) ScanValue(value []byte, m *types.Member) {
-	lo, hi := 0, 0
-	hi = next(value, hi)
-	m.Pro = types.Protocol(value[lo])
-
-	lo = hi + 1
-	hi = next(value, hi + 1)
-	m.Host = string(value[lo:hi])
-
-	lo = hi + 1
-	hi = next(value, hi + 1)
-	m.Port = string(value[lo:hi])
-}
-
-func next(b []byte, i int) int {
-	for ; i < len(b); i++ {
-		if b[i] == delimiterByte {
-			return i
-		}
-	}
-	return i
+func (f *basicFormatter) ScanValue(value string, m *types.Member) {
+	tokens := strings.Split(value, f.delim)
+	m.Pro = types.Protocol(tokens[0])
+	m.Host = tokens[1]
+	m.Port = tokens[2]
 }

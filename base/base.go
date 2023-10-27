@@ -6,7 +6,9 @@ import (
 )
 
 type Base interface {
+	Start()
+	Stop()
 	Flow(m *types.Message) error
-	Apply(e *emitter.Emitter, op types.Operation, topics []types.Topic)
-	// Delete(e *emitter.Emitter)
+	Apply(e *emitter.Emitter, cg *types.Change)
+	Delete(e *emitter.Emitter)
 }
