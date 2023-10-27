@@ -10,12 +10,12 @@ import (
 )
 
 type indexNode struct {
-	Emitters []*emitter.Emitter
+	Emitters []emitter.Emitter
 	Childs   map[string]*indexNode
 }
 
 type ecg struct {
-	Emitter *emitter.Emitter
+	Emitter emitter.Emitter
 	Cg      *types.Change
 }
 
@@ -60,14 +60,14 @@ func (b *basicBase) Flow(m *types.Message) error {
 	return nil
 }
 
-func (b *basicBase) Apply(e *emitter.Emitter, cg *types.Change) {
+func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
 	b.changes <- &ecg{
 		e,
 		cg,
 	}
 }
 
-func (b *basicBase) Delete(e *emitter.Emitter) {
+func (b *basicBase) Delete(e emitter.Emitter) {
 	b.Apply(e, &types.Change{
 		Op:     types.OperationDel,
 		Topics: nil,
