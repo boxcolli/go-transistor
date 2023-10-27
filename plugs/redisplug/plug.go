@@ -152,14 +152,14 @@ func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis
 			key := strings.SplitN(msg.Channel, ":", 2)[1]
 			e := new(plugs.Event)
 			{
-				p.f.ScanKey(key, &e.Data)
+				p.f.ScanKey(key, e.Data)
 
 				p.memx.RLock()
 				me := p.me
 				p.memx.RUnlock()
 
 				// Discard if it's me
-				if me != nil && me.EqualsId(e.Data) {
+				if me != nil && me.EqualsId(*e.Data) {
 					continue
 				}
 			}

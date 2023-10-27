@@ -94,7 +94,7 @@ func TestEtcdPlug(t *testing.T) {
 			},
 			{
 				Op: types.OperationDel,
-				Data: types.Member{
+				Data: &types.Member{
 					Cname: m.Cname,
 					Name: m.Name,
 				},
