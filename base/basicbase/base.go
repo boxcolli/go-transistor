@@ -9,6 +9,7 @@ import (
 	"github.com/boxcolli/go-transistor/types"
 )
 
+// structs
 type indexNode struct {
 	Emitters []emitter.Emitter
 	Childs   map[string]*indexNode
@@ -26,9 +27,12 @@ type basicBase struct {
 	changes chan *ecg
 }
 
+// Create BasicBase instance
 func NewBasicBase() base.Base {
 	return &basicBase{}
 }
+
+// Base function implements
 
 func (b *basicBase) Start() {
 	b.changes = make(chan *ecg)
@@ -37,23 +41,6 @@ func (b *basicBase) Start() {
 
 func (b *basicBase) Stop() {
 	panic("unimplemented")
-}
-
-func (b *basicBase) changeLoop() {
-	stop := false
-	for !stop {
-		select {
-		case cg := <-b.changes:
-			b.imx.RLock()
-			switch cg.Cg.Op {
-			case types.OperationAdd:
-				fmt.Print("Add")
-			case types.OperationDel:
-				fmt.Print("Del")
-			}
-			b.imx.Unlock()
-		}
-	}
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
@@ -72,4 +59,31 @@ func (b *basicBase) Delete(e emitter.Emitter) {
 		Op:     types.OperationDel,
 		Topics: nil,
 	})
+}
+
+// basicbase functions
+func (b *basicBase) changeLoop() {
+	stop := false
+	for !stop {
+		select {
+		case cg := <-b.changes:
+			b.imx.RLock()
+			switch cg.Cg.Op {
+			case types.OperationAdd:
+				fmt.Print("Add")
+			case types.OperationDel:
+				fmt.Print("Del")
+			}
+
+			b.imx.Unlock()
+		}
+	}
+}
+
+func (b *basicBase) changeAdd(emitter emitter.Emitter, topic types.Topic) {
+	panic("unimplemented")
+}
+
+func (b *basicBase) changeDel(emitter emitter.Emitter, topic types.Topic) {
+	panic("unimplemented")
 }
