@@ -1,4 +1,4 @@
-package basicbase
+package basicbaseidx
 
 import "github.com/boxcolli/go-transistor/emitter"
 
