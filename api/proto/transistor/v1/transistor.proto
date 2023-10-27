@@ -41,7 +41,7 @@ message Change {
 service TransistorService {
     // Open a new command line interface
     rpc Command(CommandRequest) returns (stream CommandResponse) {}
-    
+
     // Receive a stream from a non-cluster node
     rpc Publish(stream PublishRequest) returns (PublishResponse) {}
 
@@ -55,7 +55,7 @@ message PublishRequest {
 }
 
 message PublishResponse {
-    //
+    Change change = 1;
 }
 
 message SubscribeRequest {
