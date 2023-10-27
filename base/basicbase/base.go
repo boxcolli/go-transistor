@@ -21,8 +21,8 @@ type ecg struct {
 }
 
 type basicBase struct {
-	i       map[string]*indexNode
-	icopy   map[string]*indexNode
+	i       *indexNode
+	icopy   *indexNode
 	imx     sync.RWMutex
 	changes chan *ecg
 }
@@ -44,6 +44,7 @@ func (b *basicBase) Stop() {
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
+
 	return nil
 }
 
@@ -68,6 +69,19 @@ func (b *basicBase) changeLoop() {
 		select {
 		case cg := <-b.changes:
 			b.imx.RLock()
+
+			// update before swap
+			switch cg.Cg.Op {
+			case types.OperationAdd:
+				fmt.Print("Add")
+			case types.OperationDel:
+				fmt.Print("Del")
+			}
+
+			// swap
+			b.i, b.icopy = b.icopy, b.i
+
+			// update after swap
 			switch cg.Cg.Op {
 			case types.OperationAdd:
 				fmt.Print("Add")
@@ -81,10 +95,6 @@ func (b *basicBase) changeLoop() {
 }
 
 func (b *basicBase) changeAdd(emitter emitter.Emitter, topic types.Topic) {
-	if topic == nil {
-		return
-	}
-
 	panic("unimplemented")
 }
 
