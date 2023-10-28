@@ -10,7 +10,7 @@ import (
 
 // structs
 type indexNode struct {
-	Emitters map[emitter.Emitter]bool
+	Emitters map[emitter.Emitter]uint
 	Childs   map[string]*indexNode
 }
 
@@ -30,11 +30,11 @@ type basicBase struct {
 func NewBasicBase() base.Base {
 	b := &basicBase{}
 	b.i = &indexNode{
-		Emitters: make(map[emitter.Emitter]bool),
+		Emitters: make(map[emitter.Emitter]uint),
 		Childs:   make(map[string]*indexNode),
 	}
 	b.icopy = &indexNode{
-		Emitters: make(map[emitter.Emitter]bool),
+		Emitters: make(map[emitter.Emitter]uint),
 		Childs:   make(map[string]*indexNode),
 	}
 	b.changes = make(chan *ecg)
@@ -137,17 +137,56 @@ func (b *basicBase) changeAdd(e emitter.Emitter, topics []types.Topic) {
 			child, ok := curr.Childs[seg]
 			if !ok {
 				child = &indexNode{
-					Emitters: make(map[emitter.Emitter]bool),
+					Emitters: make(map[emitter.Emitter]uint),
 					Childs:   make(map[string]*indexNode),
 				}
+				child.Emitters[e] = 1
 				curr.Childs[seg] = child
+			} else if _, ok := child.Emitters[e]; !ok {
+				child.Emitters[e] = 1
+			} else {
+				child.Emitters[e]++
 			}
-			child.Emitters[e] = true
 			curr = child
 		}
 	}
 }
 
 func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
+	// nil check
+	if topics == nil || len(topics) == 0 {
+		return
+	}
 
+	// process
+	for _, topic := range topics {
+		if topic == nil {
+			continue
+		}
+
+		curr := b.i
+		exist := true
+		for _, seg := range topic {
+			// move to child
+			child, ok := curr.Childs[seg]
+			if !ok {
+				exist = false
+				break
+			}
+			curr = child
+
+			// check is emitter in Emittes
+			_, ex := curr.Emitters[e]
+			if !ex {
+				exist = false
+				break
+			}
+		}
+		if exist {
+			curr.recurDel(e)
+		}
+	}
+}
+
+func (node *indexNode) recurDel(e emitter.Emitter) {
 }
