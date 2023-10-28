@@ -1,6 +1,7 @@
 package basicbase
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -84,7 +85,7 @@ func (b *basicBase) Flow(m *types.Message) error {
 		return base.ErrNoTopic
 	}
 
-	b.imx.Lock()
+	b.imx.RLock()
 	curr := b.i
 	exist := true
 	for _, seg := range topic {
@@ -100,7 +101,7 @@ func (b *basicBase) Flow(m *types.Message) error {
 			e.Emit(m)
 		}
 	}
-	b.imx.Unlock()
+	b.imx.RUnlock()
 
 	return nil
 }
@@ -189,4 +190,19 @@ func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
 }
 
 func (node *indexNode) recurDel(e emitter.Emitter) {
+	if cnt, ex := node.Emitters[e]; ex {
+		for key, child := range node.Childs {
+			child.recurDel(e)
+
+			if len(node.Childs) == 0 {
+				fmt.Printf("node '%s' is deleted.\n", key)
+				delete(node.Childs, key)
+			}
+		}
+		if cnt <= 1 {
+			delete(node.Emitters, e)
+		} else {
+			node.Emitters[e]--
+		}
+	}
 }
