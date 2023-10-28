@@ -77,7 +77,31 @@ func (b *basicBase) Stop() {
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
-	// TODO
+	topic := m.Topic
+
+	// nil check
+	if topic == nil || topic.Empty() {
+		return base.ErrNoTopic
+	}
+
+	b.imx.Lock()
+	curr := b.i
+	exist := true
+	for _, seg := range topic {
+		child, ok := curr.Childs[seg]
+		if !ok {
+			exist = false
+			break
+		}
+		curr = child
+	}
+	if exist {
+		for e, _ := range curr.Emitters {
+			e.Emit(m)
+		}
+	}
+	b.imx.Unlock()
+
 	return nil
 }
 
@@ -113,13 +137,12 @@ func (b *basicBase) changeAdd(e emitter.Emitter, topics []types.Topic) {
 			child, ok := curr.Childs[seg]
 			if !ok {
 				child = &indexNode{
-					Emitters: map[emitter.Emitter]bool{
-						e: true,
-					},
-					Childs: make(map[string]*indexNode),
+					Emitters: make(map[emitter.Emitter]bool),
+					Childs:   make(map[string]*indexNode),
 				}
 				curr.Childs[seg] = child
 			}
+			child.Emitters[e] = true
 			curr = child
 		}
 	}
