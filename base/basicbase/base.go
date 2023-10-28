@@ -29,14 +29,44 @@ type basicBase struct {
 
 // Create BasicBase instance
 func NewBasicBase() base.Base {
-	return &basicBase{}
+	b := &basicBase{}
+	b.i = &indexNode{}
+	b.icopy = &indexNode{}
+	b.changes = make(chan *ecg)
+
+	return b
 }
 
 // Base function implements
-
 func (b *basicBase) Start() {
-	b.changes = make(chan *ecg)
-	go b.changeLoop()
+	stop := false
+	for !stop {
+		select {
+		case cg := <-b.changes:
+			b.imx.RLock()
+
+			// update before swap
+			switch cg.Cg.Op {
+			case types.OperationAdd:
+				b.changeAdd(cg.Emitter, cg.Cg.Topics)
+			case types.OperationDel:
+				b.changeDel(cg.Emitter, cg.Cg.Topics)
+			}
+
+			// swap
+			b.i, b.icopy = b.icopy, b.i
+
+			// update after swap
+			switch cg.Cg.Op {
+			case types.OperationAdd:
+				b.changeAdd(cg.Emitter, cg.Cg.Topics)
+			case types.OperationDel:
+				b.changeDel(cg.Emitter, cg.Cg.Topics)
+			}
+
+			b.imx.Unlock()
+		}
+	}
 }
 
 func (b *basicBase) Stop() {
@@ -44,7 +74,6 @@ func (b *basicBase) Stop() {
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
-
 	return nil
 }
 
@@ -63,41 +92,10 @@ func (b *basicBase) Delete(e emitter.Emitter) {
 }
 
 // basicbase functions
-func (b *basicBase) changeLoop() {
-	stop := false
-	for !stop {
-		select {
-		case cg := <-b.changes:
-			b.imx.RLock()
-
-			// update before swap
-			switch cg.Cg.Op {
-			case types.OperationAdd:
-				fmt.Print("Add")
-			case types.OperationDel:
-				fmt.Print("Del")
-			}
-
-			// swap
-			b.i, b.icopy = b.icopy, b.i
-
-			// update after swap
-			switch cg.Cg.Op {
-			case types.OperationAdd:
-				fmt.Print("Add")
-			case types.OperationDel:
-				fmt.Print("Del")
-			}
-
-			b.imx.Unlock()
-		}
-	}
+func (b *basicBase) changeAdd(emitter emitter.Emitter, topics []types.Topic) {
+	fmt.Print("changeAdd()")
 }
 
-func (b *basicBase) changeAdd(emitter emitter.Emitter, topic types.Topic) {
-	panic("unimplemented")
-}
-
-func (b *basicBase) changeDel(emitter emitter.Emitter, topic types.Topic) {
-	panic("unimplemented")
+func (b *basicBase) changeDel(emitter emitter.Emitter, topics []types.Topic) {
+	fmt.Print("changeDel()")
 }
