@@ -1,7 +1,6 @@
 package basicbase
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -30,8 +29,14 @@ type basicBase struct {
 // Create BasicBase instance
 func NewBasicBase() base.Base {
 	b := &basicBase{}
-	b.i = &indexNode{}
-	b.icopy = &indexNode{}
+	b.i = &indexNode{
+		Emitters: make(map[emitter.Emitter]bool),
+		Childs:   make(map[string]*indexNode),
+	}
+	b.icopy = &indexNode{
+		Emitters: make(map[emitter.Emitter]bool),
+		Childs:   make(map[string]*indexNode),
+	}
 	b.changes = make(chan *ecg)
 
 	return b
@@ -43,8 +48,6 @@ func (b *basicBase) Start() {
 	for !stop {
 		select {
 		case cg := <-b.changes:
-			b.imx.RLock()
-
 			// update before swap
 			switch cg.Cg.Op {
 			case types.OperationAdd:
@@ -54,7 +57,9 @@ func (b *basicBase) Start() {
 			}
 
 			// swap
+			b.imx.Lock()
 			b.i, b.icopy = b.icopy, b.i
+			b.imx.Unlock()
 
 			// update after swap
 			switch cg.Cg.Op {
@@ -63,8 +68,6 @@ func (b *basicBase) Start() {
 			case types.OperationDel:
 				b.changeDel(cg.Emitter, cg.Cg.Topics)
 			}
-
-			b.imx.Unlock()
 		}
 	}
 }
@@ -74,6 +77,7 @@ func (b *basicBase) Stop() {
 }
 
 func (b *basicBase) Flow(m *types.Message) error {
+	// TODO
 	return nil
 }
 
@@ -92,10 +96,35 @@ func (b *basicBase) Delete(e emitter.Emitter) {
 }
 
 // basicbase functions
-func (b *basicBase) changeAdd(emitter emitter.Emitter, topics []types.Topic) {
-	fmt.Print("changeAdd()")
+func (b *basicBase) changeAdd(e emitter.Emitter, topics []types.Topic) {
+	// nil check
+	if topics == nil || len(topics) == 0 {
+		return
+	}
+
+	// process
+	for _, topic := range topics {
+		if topic == nil || topic.Empty() {
+			continue
+		}
+
+		curr := b.icopy
+		for _, seg := range topic {
+			child, ok := curr.Childs[seg]
+			if !ok {
+				child = &indexNode{
+					Emitters: map[emitter.Emitter]bool{
+						e: true,
+					},
+					Childs: make(map[string]*indexNode),
+				}
+				curr.Childs[seg] = child
+			}
+			curr = child
+		}
+	}
 }
 
-func (b *basicBase) changeDel(emitter emitter.Emitter, topics []types.Topic) {
-	fmt.Print("changeDel()")
+func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
+
 }
