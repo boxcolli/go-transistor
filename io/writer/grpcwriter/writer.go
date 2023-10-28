@@ -7,13 +7,18 @@ import (
 )
 
 type grpcWriter struct {
+	stream pb.TransistorService_SubscribeServer 
 }
 
 // Write implements io.StreamWriter.
-func (*grpcWriter) Write(*types.Message) error {
-	panic("unimplemented")
+func (w *grpcWriter) Write(m *types.Message) error {
+	return w.stream.Send(&pb.SubscribeResponse{
+		Msg: m.Marshal(),
+	})
 }
 
 func NewGrpcWriter(stream pb.TransistorService_SubscribeServer) io.StreamWriter {
-	return &grpcWriter{}
+	return &grpcWriter{
+		stream: stream,
+	}
 }

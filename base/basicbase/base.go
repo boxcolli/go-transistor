@@ -40,10 +40,10 @@ func (b *basicBase) Flow(m *types.Message) error {
 	return nil
 }
 
-func (b *basicBase) Apply(e *emitter.Emitter, cg *types.Change) {
+func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
 	panic("unimplemented")
 }
 
-func (b *basicBase) Delete(e *emitter.Emitter) {
+func (b *basicBase) Delete(e emitter.Emitter) {
 	panic("unimplemented")
 }
