@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/boxcolli/go-transistor/sinks"
+	"github.com/boxcolli/go-transistor/sink"
 )
 
 type Query struct {
@@ -22,27 +22,27 @@ type Query struct {
 
 type sqlSink struct {
 	query	Query
-	opt    	sinks.SinkOption
+	opt    	sink.SinkOption
 }
 
-func NewSQLSink(query Query, opt sinks.SinkOption) sinks.Sink {
+func NewSQLSink(query Query, opt sink.SinkOption) sink.Sink {
 	return &sqlSink{
 		query: query,
 		opt:  opt,
 	}
 }
 
-// Create implements sinks.Sink.
+// Create implements sink.Sink.
 func (s *sqlSink) Create(topic string, topicId []byte, data interface{}, tp time.Time) error {
 	return s.query.Create[topic](topicId, data, tp)
 }
 
-// Update implements sinks.Sink.
+// Update implements sink.Sink.
 func (s *sqlSink) Update(topic string, topicId []byte, data interface{}, tp time.Time) error {
 	return s.query.Update[topic](topicId, data, tp)
 }
 
-// Delete implements sinks.Sink.
+// Delete implements sink.Sink.
 func (s *sqlSink) Delete(topic string, topicId []byte, tp time.Time) error {
 	return s.query.Delete[topic](topicId, tp)
 }

@@ -5,13 +5,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/plug"
 	"github.com/boxcolli/go-transistor/types"
 	"github.com/redis/go-redis/v9"
 )
 
 type entry struct {
-	ch		chan *plugs.Event	// Singleton watch channels
+	ch		chan *plug.Event	// Singleton watch channels
 	stop	chan bool			// Channels connected with watch goroutines
 }
 
@@ -33,7 +33,7 @@ type redisPlug struct {
 		__keyspace@<db>__:<key>
 	Use NewBasicRedisFormatter() or customized formatter for redis.
 */
-func NewRedisPlug(client *redis.Client, f RedisFormatter) plugs.Plug {
+func NewRedisPlug(client *redis.Client, f RedisFormatter) plug.Plug {
 	return &redisPlug{
 		client: client,
 		f: f,
@@ -78,7 +78,7 @@ func (p *redisPlug) Me(ctx context.Context, op types.Operation, me *types.Member
 }
 
 // Watch implements plug.Plug.
-func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *plugs.Event, error) {
+func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *plug.Event, error) {
 	p.emx.Lock()
 	defer p.emx.Unlock()
 
@@ -88,13 +88,13 @@ func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *
 	}
 
 	var watch	<-chan *redis.Message
-	var ch		chan *plugs.Event
+	var ch		chan *plug.Event
 	var stop 	chan bool
 	{
 		pubsub := p.client.PSubscribe(context.Background(), p.f.PrintPSubscribeKeyspace(cname))
 		watch = pubsub.Channel()
 
-		ch = make(chan *plugs.Event, size)
+		ch = make(chan *plug.Event, size)
 		stop = make(chan bool)
 
 		p.e[cname] = entry{ ch: ch, stop: stop }
@@ -116,13 +116,13 @@ func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *
 			if err != nil {
 				return nil, err
 			}
-			e := new(plugs.Event)
+			e := new(plug.Event)
 			e.Op = types.OperationAdd
-			p.f.ScanKey(key, &e.Data)
-			p.f.ScanValue(value, &e.Data)
+			p.f.ScanKey(key, e.Data)
+			p.f.ScanValue(value, e.Data)
 
 			// Skip if it's me
-			if me != nil && me.EqualsId(e.Data) {
+			if me != nil && me.EqualsId(*e.Data) {
 				continue
 			}
 			
@@ -135,7 +135,7 @@ func (p *redisPlug) Watch(ctx context.Context, cname string, size int) (<-chan *
 	return ch, nil
 }
 
-func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis.Message, ch chan<- *plugs.Event, stop <-chan bool) {
+func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis.Message, ch chan<- *plug.Event, stop <-chan bool) {
 	for {
 		select {
 			// Stop watching changes
@@ -150,7 +150,7 @@ func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis
 			}
 
 			key := strings.SplitN(msg.Channel, ":", 2)[1]
-			e := new(plugs.Event)
+			e := new(plug.Event)
 			{
 				p.f.ScanKey(key, e.Data)
 
@@ -174,20 +174,20 @@ func (p *redisPlug) watch(ctx context.Context, cname string, watch <-chan *redis
 				}
 
 				e.Op = types.OperationAdd
-				p.f.ScanValue(value, &e.Data)
+				p.f.ScanValue(value, e.Data)
 
 				ch <- e
 
 			case eventDel:
 				e.Op = types.OperationDel
-				p.f.ScanKey(key, &e.Data)
+				p.f.ScanKey(key, e.Data)
 
 				ch <- e
 			
 			case eventExp:	// pretend it's delete
-				e := new(plugs.Event)
+				e := new(plug.Event)
 				e.Op = types.OperationDel
-				p.f.ScanKey(key, &e.Data)
+				p.f.ScanKey(key, e.Data)
 
 				ch <- e
 			}

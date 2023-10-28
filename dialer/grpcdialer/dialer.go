@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
-	"github.com/boxcolli/go-transistor/dialers"
+	"github.com/boxcolli/go-transistor/dialer"
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/io/reader/grpcreader"
 	"github.com/boxcolli/go-transistor/types"
@@ -28,7 +28,7 @@ type grpcDialer struct {
 	emx sync.RWMutex
 }
 
-func NewGrpcDialer(opts []grpc.DialOption) dialers.Dialer {
+func NewGrpcDialer(opts []grpc.DialOption) dialer.Dialer {
 	return &grpcDialer{
 		opts: opts,
 	}
@@ -87,7 +87,7 @@ func (d *grpcDialer) Apply(m *types.Member, c *types.Change) error {
 
 	ent, ok := d.e[m]
 	if !ok {
-		return dialers.ErrMemberNotFound
+		return dialer.ErrMemberNotFound
 	}
 
 	return ent.sub.Send(&pb.SubscribeRequest{ Change: c.Marshal() })

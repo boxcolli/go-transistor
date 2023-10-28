@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/plug"
 	"github.com/boxcolli/go-transistor/types"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/etcd/client/v3"
@@ -35,12 +35,12 @@ func TestEtcdPlug(t *testing.T) {
 		prefix = "local"
 		delim = "#"
 		cname = "c0"
-		plug plugs.Plug
-		formatter plugs.Formatter
+		etcdplug plug.Plug
+		formatter plug.Formatter
 	)
 	{
-		formatter = plugs.NewBasicFormatter(prefix, delim)
-		plug = NewEtcdPlug(client, formatter)
+		formatter = plug.NewBasicFormatter(prefix, delim)
+		etcdplug = NewEtcdPlug(client, formatter)
 	}
 
 	var members = []types.Member{}
@@ -65,9 +65,9 @@ func TestEtcdPlug(t *testing.T) {
 	// Watch & Stop
 	{
 		// Watch
-		ch, err := plug.Watch(context.Background(), cname, 100)
+		ch, err := etcdplug.Watch(context.Background(), cname, 100)
 		assert.NoError(t, err)
-		es := []plugs.Event{}
+		es := []plug.Event{}
 		go func() {
 			for e := range ch {
 				es = append(es, *e)
@@ -83,14 +83,14 @@ func TestEtcdPlug(t *testing.T) {
 			Port: "1",
 		}
 		members = append(members, m)
-		events := []plugs.Event{
+		events := []plug.Event{
 			{
 				Op: types.OperationAdd,
-				Data: members[0],
+				Data: &members[0],
 			},
 			{
 				Op: types.OperationAdd,
-				Data: m,
+				Data: &m,
 			},
 			{
 				Op: types.OperationDel,
@@ -115,7 +115,7 @@ func TestEtcdPlug(t *testing.T) {
 
 		// Assert
 		time.Sleep(time.Second * 2)	// It takes time to detect changes
-		plug.Stop(cname)
+		etcdplug.Stop(cname)
 		assert.Equal(t, true, reflect.DeepEqual(events, es))
 		t.Log("watch actual events", es)
 		t.Log("watch actual events len(es)", len(es))
@@ -128,9 +128,9 @@ func TestEtcdPlug(t *testing.T) {
 	// Me
 	{
 		// Watch
-		es := []plugs.Event{}
+		es := []plug.Event{}
 		{
-			ch, err := plug.Watch(context.Background(), cname, 100)
+			ch, err := etcdplug.Watch(context.Background(), cname, 100)
 			assert.NoError(t, err)
 			go func() {
 				for e := range ch {
@@ -149,11 +149,11 @@ func TestEtcdPlug(t *testing.T) {
 
 		// Add me
 		{
-			err := plug.Me(context.Background(), types.OperationAdd, me)
+			err := etcdplug.Me(context.Background(), types.OperationAdd, me)
 			assert.NoError(t, err)
 	
 			// Assert
-			plug.Stop(cname)
+			etcdplug.Stop(cname)
 			time.Sleep(1 * time.Second)
 			assert.Zero(t, len(es))
 			t.Log("Add me watch events",es)
@@ -170,7 +170,7 @@ func TestEtcdPlug(t *testing.T) {
 
 		// Delete me
 		{
-			err := plug.Me(context.Background(), types.OperationDel, nil)
+			err := etcdplug.Me(context.Background(), types.OperationDel, nil)
 			assert.NoError(t, err)
 			
 			res, err := client.Get(context.Background(), formatter.PrintKey(me))
@@ -181,7 +181,7 @@ func TestEtcdPlug(t *testing.T) {
 
 	// Close
 	{
-		plug.Close()
+		etcdplug.Close()
 		
 		conn := client.ActiveConnection()
 		assert.Equal(t, connectivity.Shutdown, conn.GetState())

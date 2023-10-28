@@ -1,13 +1,10 @@
 package server
 
 import (
-	"sync"
-
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/base"
 	"github.com/boxcolli/go-transistor/collector"
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
-	"github.com/boxcolli/go-transistor/emitter/grpcemitter"
 	"github.com/boxcolli/go-transistor/io/reader/grpcreader"
 	"github.com/boxcolli/go-transistor/io/writer/grpcwriter"
 	"github.com/boxcolli/go-transistor/server"

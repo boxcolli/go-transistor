@@ -4,19 +4,19 @@ import (
 	"context"
 	"sync"
 
-	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/plug"
 	"github.com/boxcolli/go-transistor/types"
 	"go.etcd.io/etcd/client/v3"
 )
 
 type entry struct {
-	ch		chan *plugs.Event	// Singleton watch channels
+	ch		chan *plug.Event	// Singleton watch channels
 	stop	chan bool			// Channels connected with watch goroutines
 }
 
 type etcdPlug struct {
 	client *clientv3.Client
-	f plugs.Formatter
+	f plug.Formatter
 
 	// To prevent emitting myself in watch channel
 	me   *types.Member
@@ -27,7 +27,7 @@ type etcdPlug struct {
 	emx sync.Mutex
 }
 
-func NewEtcdPlug(cl *clientv3.Client, f plugs.Formatter) plugs.Plug {
+func NewEtcdPlug(cl *clientv3.Client, f plug.Formatter) plug.Plug {
 	return &etcdPlug{
 		client: cl,
 		f: f,
@@ -66,7 +66,7 @@ func (p *etcdPlug) Me(ctx context.Context, op types.Operation, me *types.Member)
 }
 
 // Watch implements plugs.Plug.
-func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) (<-chan *plugs.Event, error) {
+func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) (<-chan *plug.Event, error) {
 	p.emx.Lock()
 	defer p.emx.Unlock()
 
@@ -76,12 +76,12 @@ func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) (<-chan *p
 	}
 
 	var watch	clientv3.WatchChan
-	var ch		chan *plugs.Event
+	var ch		chan *plug.Event
 	var stop 	chan bool
 	{
 		watch = p.client.Watch(ctx, p.f.PrintKeyspace(cname), clientv3.WithPrefix())
 
-		ch = make(chan *plugs.Event, size)
+		ch = make(chan *plug.Event, size)
 		stop = make(chan bool)
 
 		p.e[cname] = entry{ ch: ch, stop: stop }
@@ -99,13 +99,13 @@ func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) (<-chan *p
 		p.memx.RUnlock()
 
 		for _, kv := range res.Kvs {
-			e := new(plugs.Event)
+			e := new(plug.Event)
 			e.Op = types.OperationAdd
-			p.f.ScanKey(string(kv.Key), &e.Data)
-			p.f.ScanValue(string(kv.Value), &e.Data)
+			p.f.ScanKey(string(kv.Key), e.Data)
+			p.f.ScanValue(string(kv.Value), e.Data)
 
 			// Skip if it's me
-			if me != nil && me.EqualsId(e.Data) {
+			if me != nil && me.EqualsId(*e.Data) {
 				continue
 			}
 
@@ -118,7 +118,7 @@ func (p *etcdPlug) Watch(ctx context.Context, cname string, size int) (<-chan *p
 	return ch, nil
 }
 
-func (p *etcdPlug) watch(cname string, watch clientv3.WatchChan, ch chan<- *plugs.Event, stop <-chan bool) {
+func (p *etcdPlug) watch(cname string, watch clientv3.WatchChan, ch chan<- *plug.Event, stop <-chan bool) {
 	for {
 		select {
 		case <- stop:
@@ -134,15 +134,15 @@ func (p *etcdPlug) watch(cname string, watch clientv3.WatchChan, ch chan<- *plug
 
 			// Fetch events
 			for _, event := range res.Events {
-				e := new(plugs.Event)
+				e := new(plug.Event)
 				{
-					p.f.ScanKey(string(event.Kv.Key), &e.Data)
+					p.f.ScanKey(string(event.Kv.Key), e.Data)
 					// Discard if it's me
 					p.memx.RLock()
 					me := p.me
 					p.memx.RUnlock()
 
-					if me != nil && me.EqualsId(e.Data) {
+					if me != nil && me.EqualsId(*e.Data) {
 						continue
 					}
 				}
@@ -150,7 +150,7 @@ func (p *etcdPlug) watch(cname string, watch clientv3.WatchChan, ch chan<- *plug
 				switch event.Type {
 				case clientv3.EventTypePut:
 					e.Op = types.OperationAdd
-					p.f.ScanValue(string(event.Kv.Value), &e.Data)
+					p.f.ScanValue(string(event.Kv.Value), e.Data)
 
 					// Send event
 					ch <- e

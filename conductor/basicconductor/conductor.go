@@ -4,10 +4,10 @@ import (
 	"sync"
 
 	"github.com/boxcolli/go-transistor/collector"
-	"github.com/boxcolli/go-transistor/conductors"
-	"github.com/boxcolli/go-transistor/dialers"
+	"github.com/boxcolli/go-transistor/conductor"
+	"github.com/boxcolli/go-transistor/dialer"
 	"github.com/boxcolli/go-transistor/io"
-	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/plug"
 	"github.com/boxcolli/go-transistor/types"
 )
 
@@ -33,8 +33,8 @@ type memberEntry struct {
 
 type basicConductor struct {
 	// Class dependency
-	p plugs.Plug
-	d dialers.Dialer
+	p plug.Plug
+	d dialer.Dialer
 	c collector.Collector
 
 	// Myself
@@ -47,7 +47,7 @@ type basicConductor struct {
 	cemx sync.RWMutex
 }
 
-func NewBasicConductor(p plugs.Plug, d dialers.Dialer, c collector.Collector, opt Option) conductors.Conductor {
+func NewBasicConductor(p plug.Plug, d dialer.Dialer, c collector.Collector, opt Option) conductor.Conductor {
 	return &basicConductor{
 		p: p,
 		d: d,
@@ -89,7 +89,7 @@ func (c *basicConductor) Begin(cname string) error {
 
 func (c *basicConductor) clusterWorker(cname string, ce *clusterEntry, ech chan<- error) {
 	// Watch
-	var watch <-chan *plugs.Event
+	var watch <-chan *plug.Event
 	{
 		var err error
 		watch, err = c.p.Watch(c.opt.GetWatchContext(), cname, c.opt.WatchChannelSize)

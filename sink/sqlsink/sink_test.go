@@ -100,7 +100,7 @@ func prepareQuery() {
 			query := `
 			INSERT INTO hello (id, name, name_tp, age, age_tp) VALUES (?, ?, ?, ?, ?)
 			`
-			Q.db.
+			// Q.db.
 			return nil
 		}
 		Q.Update["hello"] = nil

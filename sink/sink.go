@@ -1,4 +1,4 @@
-package sinks
+package sink
 
 import (
 	"github.com/boxcolli/go-transistor/types"

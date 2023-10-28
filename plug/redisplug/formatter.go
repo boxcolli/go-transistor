@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/boxcolli/go-transistor/plugs"
+	"github.com/boxcolli/go-transistor/plug"
 	"github.com/boxcolli/go-transistor/types"
 )
 
@@ -15,7 +15,7 @@ import (
 */
 
 type RedisFormatter interface {
-	plugs.Formatter
+	plug.Formatter
 	PrintPSubscribeKeyspace(cname string) string
 }
 

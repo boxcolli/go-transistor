@@ -1,4 +1,4 @@
-package conductors
+package conductor
 
 import "github.com/boxcolli/go-transistor/types"
 

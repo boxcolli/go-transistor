@@ -1,4 +1,4 @@
-package basic
+package basiccollector
 
 import (
 	"sync"
@@ -15,8 +15,16 @@ type basicCollector struct {
 	mx   sync.Mutex
 }
 
+func NewBasicCollector(b base.Base) collector.Collector {
+	return &basicCollector{
+		b: b,
+		stop: make(map[io.StreamReader]chan bool),
+		mx: sync.Mutex{},
+	}
+}
+
 // Work implements collector.Collector.
-func (c *basicCollector) Work(r io.StreamReader, call func(e error)) {
+func (c *basicCollector) Work(r io.StreamReader) error {
 	// Open a stop signal channel
 	stopch := make(chan bool)
 	{
@@ -26,53 +34,36 @@ func (c *basicCollector) Work(r io.StreamReader, call func(e error)) {
 	}
 
 	// Work
-	stop := false
-	for !stop {
-
+	for {
 		if <-stopch {
-			stop = true
-			break
+			return nil
 		}
 
+		// Read message
 		m, err := r.Read()
-
 		if err != nil {
-
-			stop = true
-			call(err)
-
-		} else {
-			err := c.b.Flow(m)
-
-			if err != nil {
-
-				stop = true
-				call(err)
-
-			}
+			return err
 		}
 
+		// Send message
+		err = c.b.Flow(m)
+		if err != nil {
+			return err
+		}
 	}
-
 }
 
 // Stop implements collector.Collector.
 func (c *basicCollector) Stop(r io.StreamReader) {
-	panic("unimplemented")
-
 	c.mx.Lock()
 	defer c.mx.Unlock()
 
 	close(c.stop[r])
 	delete(c.stop, r)
-
 }
 
 // StopAll implements collector.Collector.
 func (c *basicCollector) StopAll() {
-
-	panic("unimplemented")
-
 	//delete all
 	c.mx.Lock()
 	defer c.mx.Unlock()
@@ -81,9 +72,4 @@ func (c *basicCollector) StopAll() {
 		close(c.stop[k])
 		delete(c.stop, k)
 	}
-
-}
-
-func NewBasicCollector() collector.Collector {
-	return &basicCollector{}
 }
