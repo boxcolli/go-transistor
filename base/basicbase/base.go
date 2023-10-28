@@ -1,7 +1,6 @@
 package basicbase
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -11,7 +10,7 @@ import (
 
 // structs
 type indexNode struct {
-	Emitters map[emitter.Emitter]uint
+	Emitters map[emitter.Emitter]bool
 	Childs   map[string]*indexNode
 }
 
@@ -31,11 +30,11 @@ type basicBase struct {
 func NewBasicBase() base.Base {
 	b := &basicBase{}
 	b.i = &indexNode{
-		Emitters: make(map[emitter.Emitter]uint),
+		Emitters: make(map[emitter.Emitter]bool),
 		Childs:   make(map[string]*indexNode),
 	}
 	b.icopy = &indexNode{
-		Emitters: make(map[emitter.Emitter]uint),
+		Emitters: make(map[emitter.Emitter]bool),
 		Childs:   make(map[string]*indexNode),
 	}
 	b.changes = make(chan *ecg)
@@ -97,7 +96,7 @@ func (b *basicBase) Flow(m *types.Message) error {
 		curr = child
 	}
 	if exist {
-		for e, _ := range curr.Emitters {
+		for e := range curr.Emitters {
 			e.Emit(m)
 		}
 	}
@@ -115,8 +114,10 @@ func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
 
 func (b *basicBase) Delete(e emitter.Emitter) {
 	b.Apply(e, &types.Change{
-		Op:     types.OperationDel,
-		Topics: nil,
+		Op: types.OperationDel,
+		Topics: []types.Topic{
+			[]string{""},
+		},
 	})
 }
 
@@ -138,16 +139,12 @@ func (b *basicBase) changeAdd(e emitter.Emitter, topics []types.Topic) {
 			child, ok := curr.Childs[seg]
 			if !ok {
 				child = &indexNode{
-					Emitters: make(map[emitter.Emitter]uint),
+					Emitters: make(map[emitter.Emitter]bool),
 					Childs:   make(map[string]*indexNode),
 				}
-				child.Emitters[e] = 1
 				curr.Childs[seg] = child
-			} else if _, ok := child.Emitters[e]; !ok {
-				child.Emitters[e] = 1
-			} else {
-				child.Emitters[e]++
 			}
+			child.Emitters[e] = true
 			curr = child
 		}
 	}
@@ -165,7 +162,14 @@ func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
 			continue
 		}
 
+		if len(topic) == 0 {
+			b.icopy.recurDel(e, "", nil)
+			continue
+		}
+
 		curr := b.i
+		var parent *indexNode = nil
+
 		exist := true
 		for _, seg := range topic {
 			// move to child
@@ -174,6 +178,7 @@ func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
 				exist = false
 				break
 			}
+			parent = curr
 			curr = child
 
 			// check is emitter in Emittes
@@ -184,25 +189,21 @@ func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
 			}
 		}
 		if exist {
-			curr.recurDel(e)
+			curr.recurDel(e, topic[len(topic)-1], parent)
 		}
 	}
 }
 
-func (node *indexNode) recurDel(e emitter.Emitter) {
-	if cnt, ex := node.Emitters[e]; ex {
+func (node *indexNode) recurDel(e emitter.Emitter, key string, parent *indexNode) {
+	if _, ex := node.Emitters[e]; parent == nil || ex {
 		for key, child := range node.Childs {
-			child.recurDel(e)
-
-			if len(node.Childs) == 0 {
-				fmt.Printf("node '%s' is deleted.\n", key)
-				delete(node.Childs, key)
-			}
+			child.recurDel(e, key, node)
 		}
-		if cnt <= 1 {
+		if parent != nil {
 			delete(node.Emitters, e)
-		} else {
-			node.Emitters[e]--
+			if len(node.Emitters) == 0 {
+				delete(parent.Childs, key)
+			}
 		}
 	}
 }
