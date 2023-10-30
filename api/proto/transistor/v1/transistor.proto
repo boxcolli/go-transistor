@@ -35,7 +35,7 @@ message Message {
 
 message Change {
     Operation op = 1;
-    repeated Topic topics = 2;
+    Topic topic = 2;
 }
 
 service TransistorService {
@@ -55,7 +55,7 @@ message PublishRequest {
 }
 
 message PublishResponse {
-    Change change = 1;
+    repeated Change change = 1;
 }
 
 message SubscribeRequest {

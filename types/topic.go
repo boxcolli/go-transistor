@@ -1,17 +1,13 @@
 package types
 
-const (
-	TopicWildcard = "*"
-)
-
 var (
-	EmptyTopic = Topic{}
-	DefaultTopic = Topic{ TopicWildcard }
+	DefaultTopic = Topic{}
 	DefaultTopics = []Topic{ DefaultTopic }
 )
 
 type Topic []string
 
+// Empty topic means a wildcard for all kinds of topic
 func (t Topic) Empty() bool {
 	return len(t) == 0
 }

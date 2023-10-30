@@ -1,209 +1,187 @@
 package basicbase
 
-import (
-	"sync"
+// import (
+// 	"sync"
 
-	"github.com/boxcolli/go-transistor/base"
-	"github.com/boxcolli/go-transistor/emitter"
-	"github.com/boxcolli/go-transistor/types"
-)
+// 	"github.com/boxcolli/go-transistor/base"
+// 	"github.com/boxcolli/go-transistor/emitter"
+// 	"github.com/boxcolli/go-transistor/types"
+// )
 
-// structs
-type indexNode struct {
-	Emitters map[emitter.Emitter]bool
-	Childs   map[string]*indexNode
-}
+// type ecg struct {
+// 	e	emitter.Emitter
+// 	cg  *types.Change
+// }
 
-type ecg struct {
-	Emitter emitter.Emitter
-	Cg      *types.Change
-}
+// type basicBase struct {
+// 	i       *inode	// index {Key: topic, Value: set(Emitter)}
+// 	icopy   *inode
+// 	inv		map[emitter.Emitter]*vnode // inverted {Key: Emitter, Value: set(topic)}
+// 	imx     sync.RWMutex
 
-type basicBase struct {
-	i       *indexNode
-	icopy   *indexNode
-	imx     sync.RWMutex
-	changes chan *ecg
-}
+// 	changes chan *ecg
+// }
 
-// Create BasicBase instance
-func NewBasicBase() base.Base {
-	b := &basicBase{}
-	b.i = &indexNode{
-		Emitters: make(map[emitter.Emitter]bool),
-		Childs:   make(map[string]*indexNode),
-	}
-	b.icopy = &indexNode{
-		Emitters: make(map[emitter.Emitter]bool),
-		Childs:   make(map[string]*indexNode),
-	}
-	b.changes = make(chan *ecg)
+// // Create BasicBase instance
+// func NewBasicBase(qsiz int) base.Base {
+// 	return &basicBase{
+// 		i:			newInode(),
+// 		icopy:		newInode(),
+// 		inv:		make(map[emitter.Emitter]*vnode),
+// 		imx:		sync.RWMutex{},
+// 		changes:	make(chan *ecg, qsiz),
+// 	}
+// }
 
-	return b
-}
+// // Base function implements
+// func (b *basicBase) Start() {
+// 	stop := false
+// 	for !stop {
+// 		select {
+// 		case cg := <-b.changes:
+// 			// update before swap
+// 			switch cg.cg.Op {
+// 			case types.OperationAdd:
+// 				b.applyAdd(cg.e, cg.cg.Topics)
+// 			case types.OperationDel:
+// 				b.applyDel(cg.e, cg.cg.Topics)
+// 			}
 
-// Base function implements
-func (b *basicBase) Start() {
-	stop := false
-	for !stop {
-		select {
-		case cg := <-b.changes:
-			// update before swap
-			switch cg.Cg.Op {
-			case types.OperationAdd:
-				b.changeAdd(cg.Emitter, cg.Cg.Topics)
-			case types.OperationDel:
-				b.changeDel(cg.Emitter, cg.Cg.Topics)
-			}
+// 			// swap
+// 			b.imx.Lock()
+// 			b.i, b.icopy = b.icopy, b.i
+// 			b.imx.Unlock()
 
-			// swap
-			b.imx.Lock()
-			b.i, b.icopy = b.icopy, b.i
-			b.imx.Unlock()
+// 			// update after swap
+// 			switch cg.cg.Op {
+// 			case types.OperationAdd:
+// 				b.applyAdd(cg.e, cg.cg.Topics)
+// 			case types.OperationDel:
+// 				b.applyDel(cg.e, cg.cg.Topics)
+// 			}
+// 		}
+// 	}
+// }
 
-			// update after swap
-			switch cg.Cg.Op {
-			case types.OperationAdd:
-				b.changeAdd(cg.Emitter, cg.Cg.Topics)
-			case types.OperationDel:
-				b.changeDel(cg.Emitter, cg.Cg.Topics)
-			}
-		}
-	}
-}
+// func (b *basicBase) Stop() {
+// 	panic("unimplemented")
+// }
 
-func (b *basicBase) Stop() {
-	panic("unimplemented")
-}
+// func (b *basicBase) Flow(m *types.Message) error {
+// 	b.imx.RLock()
+// 	defer b.imx.RUnlock()
 
-func (b *basicBase) Flow(m *types.Message) error {
-	topic := m.Topic
+// 	curr := b.i
+// 	{
+// 		// Flow message
+// 		for e := range curr.eset {
+// 			e.Emit(m)
+// 		}
+	
+// 		// Traverse tree
+// 		for _, seg := range m.Topic {
+// 			// Go to next node
+// 			var ok bool
+// 			if curr, ok = curr.next[seg]; !ok {
+// 				break
+// 			}
+	
+// 			// Flow message
+// 			for e := range curr.eset {
+// 				e.Emit(m)
+// 			}
+// 		}
+// 	}
 
-	// nil check
-	if topic == nil || topic.Empty() {
-		return base.ErrNoTopic
-	}
+// 	return nil
+// }
 
-	b.imx.RLock()
-	curr := b.i
-	exist := true
-	for _, seg := range topic {
-		child, ok := curr.Childs[seg]
-		if !ok {
-			exist = false
-			break
-		}
-		curr = child
-	}
-	if exist {
-		for e := range curr.Emitters {
-			e.Emit(m)
-		}
-	}
-	b.imx.RUnlock()
+// func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
+// 	b.changes <- &ecg{ e, cg }
+// }
 
-	return nil
-}
+// func (b *basicBase) Delete(e emitter.Emitter) {
+// 	b.Apply(e, &types.Change{
+// 		Op: types.OperationDel,
+// 		Topics: []types.Topic{{}},
+// 	})
+// }
 
-func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
-	b.changes <- &ecg{
-		e,
-		cg,
-	}
-}
+// // basicbase functions
+// func (b *basicBase) applyAdd(e emitter.Emitter, topics []types.Topic) {
+// 	// Find difference in inverted index
+// 	diff := b.inv[e]
+	
+	
 
-func (b *basicBase) Delete(e emitter.Emitter) {
-	b.Apply(e, &types.Change{
-		Op: types.OperationDel,
-		Topics: []types.Topic{
-			[]string{""},
-		},
-	})
-}
 
-// basicbase functions
-func (b *basicBase) changeAdd(e emitter.Emitter, topics []types.Topic) {
-	// nil check
-	if topics == nil || len(topics) == 0 {
-		return
-	}
+// 	for _, topic := range topics {
+// 		curr := b.icopy
+// 		for _, seg := range topic {
+// 			next, ok := curr.next[seg]
+// 			if !ok {
+// 				// Append new child
+// 				curr.next[seg] = &inode{
+// 					eset: make(map[emitter.Emitter]bool),
+// 					next:   make(map[string]*inode),
+// 				}
+// 			}
+// 			next.eset[e] = true
+// 			curr = next
+// 		}
+// 	}
+// }
 
-	// process
-	for _, topic := range topics {
-		if topic == nil || topic.Empty() {
-			continue
-		}
+// func (b *basicBase) applyDel(e emitter.Emitter, topics []types.Topic) {
+// 	// nil check
+// 	if len(topics) == 0 {
+// 		return
+// 	}
 
-		curr := b.icopy
-		for _, seg := range topic {
-			child, ok := curr.Childs[seg]
-			if !ok {
-				child = &indexNode{
-					Emitters: make(map[emitter.Emitter]bool),
-					Childs:   make(map[string]*indexNode),
-				}
-				curr.Childs[seg] = child
-			}
-			child.Emitters[e] = true
-			curr = child
-		}
-	}
-}
+// 	// process
+// 	for _, topic := range topics {
+// 		if topic.Empty() {
+// 			b.icopy.recurDel(e, "", nil)
+// 			continue
+// 		}
 
-func (b *basicBase) changeDel(e emitter.Emitter, topics []types.Topic) {
-	// nil check
-	if topics == nil || len(topics) == 0 {
-		return
-	}
+// 		curr := b.i
+// 		var parent *inode = nil
 
-	// process
-	for _, topic := range topics {
-		if topic == nil {
-			continue
-		}
+// 		exist := true
+// 		for _, seg := range topic {
+// 			// move to child
+// 			child, ok := curr.next[seg]
+// 			if !ok {
+// 				exist = false
+// 				break
+// 			}
+// 			parent = curr
+// 			curr = child
 
-		if len(topic) == 0 {
-			b.icopy.recurDel(e, "", nil)
-			continue
-		}
+// 			// check if emitter is in eset
+// 			_, ex := curr.eset[e]
+// 			if !ex {
+// 				exist = false
+// 				break
+// 			}
+// 		}
+// 		if exist {
+// 			curr.recurDel(e, topic[len(topic)-1], parent)
+// 		}
+// 	}
+// }
 
-		curr := b.i
-		var parent *indexNode = nil
-
-		exist := true
-		for _, seg := range topic {
-			// move to child
-			child, ok := curr.Childs[seg]
-			if !ok {
-				exist = false
-				break
-			}
-			parent = curr
-			curr = child
-
-			// check is emitter in Emittes
-			_, ex := curr.Emitters[e]
-			if !ex {
-				exist = false
-				break
-			}
-		}
-		if exist {
-			curr.recurDel(e, topic[len(topic)-1], parent)
-		}
-	}
-}
-
-func (node *indexNode) recurDel(e emitter.Emitter, key string, parent *indexNode) {
-	if _, ex := node.Emitters[e]; parent == nil || ex {
-		for key, child := range node.Childs {
-			child.recurDel(e, key, node)
-		}
-		if parent != nil {
-			delete(node.Emitters, e)
-			if len(node.Emitters) == 0 {
-				delete(parent.Childs, key)
-			}
-		}
-	}
-}
+// func (node *inode) recurDel(e emitter.Emitter, key string, parent *inode) {
+// 	if _, ex := node.eset[e]; parent == nil || ex {
+// 		for key, child := range node.next {
+// 			child.recurDel(e, key, node)
+// 		}
+// 		if parent != nil {
+// 			delete(node.eset, e)
+// 			if len(node.eset) == 0 {
+// 				delete(parent.next, key)
+// 			}
+// 		}
+// 	}
+// }

@@ -5,13 +5,13 @@ import pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 var (
 	DefaultChange = Change{
 		Op: OperationAdd,
-		Topics: DefaultTopics,
+		Topic: DefaultTopic,
 	}
 )
 
 type Change struct {
 	Op		Operation
-	Topics	[]Topic
+	Topic	Topic
 }
 
 func (m *Change) Marshal() *pb.Change {

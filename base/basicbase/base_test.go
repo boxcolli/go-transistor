@@ -15,7 +15,7 @@ func TestBasicBase(t *testing.T) {
 	fmt.Println("start test")
 
 	// base
-	base := NewBasicBase()
+	base := NewBasicBase(10)
 	go base.Start()
 
 	// Emitter
