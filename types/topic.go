@@ -1,8 +1,7 @@
 package types
 
 var (
-	DefaultTopic = Topic{}
-	DefaultTopics = []Topic{ DefaultTopic }
+	EmptyTopic = Topic{}
 )
 
 type Topic []string

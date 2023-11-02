@@ -13,7 +13,7 @@ import (
 type Message struct {
 	Topic		Topic
 	Method 		Method
-	Data 		interface{}
+	Data 		[]byte
 	TP 			time.Time
 }
 

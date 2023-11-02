@@ -60,15 +60,13 @@ func (b *mockBase) Delete(e emitter.Emitter) {
 }
 
 // Flow implements base.Base.
-func (b *mockBase) Flow(m *types.Message) error {
+func (b *mockBase) Flow(m *types.Message) {
 	b.emx.RLock()
 	defer b.emx.RUnlock()
 
 	for _, e := range b.e {
 		e.Emit(m)
 	}
-
-	return nil
 }
 
 // Start implements base.Base.

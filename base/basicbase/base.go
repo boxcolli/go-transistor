@@ -1,187 +1,176 @@
 package basicbase
 
-// import (
-// 	"sync"
+import (
+	"sync"
 
-// 	"github.com/boxcolli/go-transistor/base"
-// 	"github.com/boxcolli/go-transistor/emitter"
-// 	"github.com/boxcolli/go-transistor/types"
-// )
+	"github.com/boxcolli/go-transistor/base"
+	"github.com/boxcolli/go-transistor/emitter"
+	"github.com/boxcolli/go-transistor/index"
+	"github.com/boxcolli/go-transistor/types"
+)
 
-// type ecg struct {
-// 	e	emitter.Emitter
-// 	cg  *types.Change
-// }
+type task struct {
+	e  emitter.Emitter
+	cg *types.Change
+}
 
-// type basicBase struct {
-// 	i       *inode	// index {Key: topic, Value: set(Emitter)}
-// 	icopy   *inode
-// 	inv		map[emitter.Emitter]*vnode // inverted {Key: Emitter, Value: set(topic)}
-// 	imx     sync.RWMutex
+type basicBase struct {
+	i		index.Index
+	icopy	index.Index
+	imx 	sync.RWMutex
 
-// 	changes chan *ecg
-// }
+	started	bool
+	stop	chan bool
+	tch 	chan *task
+	tq		[]*task
+	wg		sync.WaitGroup
+	mx		sync.Mutex
+}
 
-// // Create BasicBase instance
-// func NewBasicBase(qsiz int) base.Base {
-// 	return &basicBase{
-// 		i:			newInode(),
-// 		icopy:		newInode(),
-// 		inv:		make(map[emitter.Emitter]*vnode),
-// 		imx:		sync.RWMutex{},
-// 		changes:	make(chan *ecg, qsiz),
-// 	}
-// }
+func NewBasicBase(buildIndex func() index.Index, msgQueueSize int) base.Base {
+	return &basicBase{
+		i:		buildIndex(),
+		icopy:	buildIndex(),
+		imx:	sync.RWMutex{},
 
-// // Base function implements
-// func (b *basicBase) Start() {
-// 	stop := false
-// 	for !stop {
-// 		select {
-// 		case cg := <-b.changes:
-// 			// update before swap
-// 			switch cg.cg.Op {
-// 			case types.OperationAdd:
-// 				b.applyAdd(cg.e, cg.cg.Topics)
-// 			case types.OperationDel:
-// 				b.applyDel(cg.e, cg.cg.Topics)
-// 			}
+		started:	false,
+		stop:	make(chan bool),
+		tch:	make(chan *task, msgQueueSize),
+		tq:		make([]*task, 0),
+		wg:		sync.WaitGroup{},
+		mx:		sync.Mutex{},
+	}
+}
 
-// 			// swap
-// 			b.imx.Lock()
-// 			b.i, b.icopy = b.icopy, b.i
-// 			b.imx.Unlock()
+// Start implements base.Base.
+func (b *basicBase) Start() {
+	b.mx.Lock()
+	defer b.mx.Unlock()
 
-// 			// update after swap
-// 			switch cg.cg.Op {
-// 			case types.OperationAdd:
-// 				b.applyAdd(cg.e, cg.cg.Topics)
-// 			case types.OperationDel:
-// 				b.applyDel(cg.e, cg.cg.Topics)
-// 			}
-// 		}
-// 	}
-// }
+	if b.started {
+		return
+	}
 
-// func (b *basicBase) Stop() {
-// 	panic("unimplemented")
-// }
+	b.wg.Add(1)
+	go b.start()
+}
 
-// func (b *basicBase) Flow(m *types.Message) error {
-// 	b.imx.RLock()
-// 	defer b.imx.RUnlock()
+func (b *basicBase) start() {
+	defer b.wg.Done()
 
-// 	curr := b.i
-// 	{
-// 		// Flow message
-// 		for e := range curr.eset {
-// 			e.Emit(m)
-// 		}
-	
-// 		// Traverse tree
-// 		for _, seg := range m.Topic {
-// 			// Go to next node
-// 			var ok bool
-// 			if curr, ok = curr.next[seg]; !ok {
-// 				break
-// 			}
-	
-// 			// Flow message
-// 			for e := range curr.eset {
-// 				e.Emit(m)
-// 			}
-// 		}
-// 	}
+	try, get, stop := make(chan bool, 1), make(chan bool), make(chan bool, 1)
+	go b.asyncLock(try, get, stop)
 
-// 	return nil
-// }
+	if len(b.tq) != 0 {
+		stopped := b.dirty(try, get, stop)
+		if stopped {
+			return
+		}
+	}
 
-// func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
-// 	b.changes <- &ecg{ e, cg }
-// }
+	for {
+		select {
+		case <- b.stop:
+			return
+		
+		case t := <- b.tch:
+			
+			if b.runTask(t) {
+				b.tq = append(b.tq, t)
+			} else {
+				continue
+			}
 
-// func (b *basicBase) Delete(e emitter.Emitter) {
-// 	b.Apply(e, &types.Change{
-// 		Op: types.OperationDel,
-// 		Topics: []types.Topic{{}},
-// 	})
-// }
+			try <- true
 
-// // basicbase functions
-// func (b *basicBase) applyAdd(e emitter.Emitter, topics []types.Topic) {
-// 	// Find difference in inverted index
-// 	diff := b.inv[e]
-	
-	
+			stopped := b.dirty(try, get, stop)
+			if stopped {
+				return
+			}
+		}
+	}
+}
 
+func (b *basicBase) dirty(try chan bool, get chan bool, stop chan bool) bool {
+	// The icopy is in dirty state
+	for {
+		select {
+		case <- b.stop:
+			stop <- true
+			return true
 
-// 	for _, topic := range topics {
-// 		curr := b.icopy
-// 		for _, seg := range topic {
-// 			next, ok := curr.next[seg]
-// 			if !ok {
-// 				// Append new child
-// 				curr.next[seg] = &inode{
-// 					eset: make(map[emitter.Emitter]bool),
-// 					next:   make(map[string]*inode),
-// 				}
-// 			}
-// 			next.eset[e] = true
-// 			curr = next
-// 		}
-// 	}
-// }
+		case <- get:
 
-// func (b *basicBase) applyDel(e emitter.Emitter, topics []types.Topic) {
-// 	// nil check
-// 	if len(topics) == 0 {
-// 		return
-// 	}
+			// swap index
+			b.i, b.icopy = b.icopy, b.i
+			b.imx.Unlock()
 
-// 	// process
-// 	for _, topic := range topics {
-// 		if topic.Empty() {
-// 			b.icopy.recurDel(e, "", nil)
-// 			continue
-// 		}
+			// drain dirty tasks
+			for _, t := range b.tq {
+				b.runTask(t)
+			}
+			return false
 
-// 		curr := b.i
-// 		var parent *inode = nil
+		case t := <- b.tch:
+			if b.runTask(t) {
+				b.tq = append(b.tq, t)
+			} else {
+				continue
+			}
+		}
+	}
+}
 
-// 		exist := true
-// 		for _, seg := range topic {
-// 			// move to child
-// 			child, ok := curr.next[seg]
-// 			if !ok {
-// 				exist = false
-// 				break
-// 			}
-// 			parent = curr
-// 			curr = child
+func (b *basicBase) asyncLock(try <-chan bool, get chan<- bool, stop <-chan bool) {
+	for {
+		select {
+		case <- try:
+			b.imx.Lock()
+			get <- true
 
-// 			// check if emitter is in eset
-// 			_, ex := curr.eset[e]
-// 			if !ex {
-// 				exist = false
-// 				break
-// 			}
-// 		}
-// 		if exist {
-// 			curr.recurDel(e, topic[len(topic)-1], parent)
-// 		}
-// 	}
-// }
+		case <- stop:
+			b.imx.Unlock()
+			return
+		}
+	}
+}
 
-// func (node *inode) recurDel(e emitter.Emitter, key string, parent *inode) {
-// 	if _, ex := node.eset[e]; parent == nil || ex {
-// 		for key, child := range node.next {
-// 			child.recurDel(e, key, node)
-// 		}
-// 		if parent != nil {
-// 			delete(node.eset, e)
-// 			if len(node.eset) == 0 {
-// 				delete(parent.next, key)
-// 			}
-// 		}
-// 	}
-// }
+func (b *basicBase) runTask(t *task) bool {
+	switch t.cg.Op {
+	case types.OperationAdd:
+		return b.icopy.Add(t.e, t.cg.Topic)
+	case types.OperationDel:
+		return b.icopy.Del(t.e, t.cg.Topic)
+	}
+	return false
+}
+
+// Stop implements base.Base.
+func (b *basicBase) Stop() {
+	b.mx.Lock()
+	defer b.mx.Unlock()
+
+	b.stop <- true
+	b.started = false
+	b.wg.Wait()
+}
+
+// Flow implements base.Base.
+func (b *basicBase) Flow(m *types.Message) {
+	b.imx.RLock()
+	b.i.Flow(m)
+	b.imx.RUnlock()
+}
+
+// Apply implements base.Base.
+func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
+	b.tch <- &task{ e, cg }
+}
+
+// Delete implements base.Base.
+func (b *basicBase) Delete(e emitter.Emitter) {
+	b.tch <- &task{ e, &types.Change{
+		Op: types.OperationDel,
+		Topic: types.EmptyTopic,
+	}}
+}

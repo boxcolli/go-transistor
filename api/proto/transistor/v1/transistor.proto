@@ -8,12 +8,6 @@ option go_package = "./pb";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-enum Operation {
-    OPERATION_UNSPECIFIED = 0;
-    OPERATION_ADD = 1;
-    OPERATION_DEL = 2;
-}
-
 enum Method {
     METHOD_UNSPECIFIED = 0;
     METHOD_EMPTY = 1;
@@ -27,10 +21,24 @@ message Topic {
 }
 
 message Message {
-    Topic topic = 1;
-    Method method = 2;
-    google.protobuf.Any data = 3;
-    google.protobuf.Timestamp timestamp = 4;
+    Mode mode = 1;
+    Topic topic = 2;
+    Method method = 3;
+    google.protobuf.Any data = 4;
+    google.protobuf.Timestamp timestamp = 5;
+}
+
+enum Mode {
+    MODE_UNSPECIFIED = 0;
+    MODE_ANY = 1;
+    MODE_ROUTE = 2;
+    MODE_ROOT = 3;
+}
+
+enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_ADD = 1;
+    OPERATION_DEL = 2;
 }
 
 message Change {

@@ -15,5 +15,5 @@ var (
 type Emitter interface {
 	Work(w io.StreamWriter) error
 	Stop()
-	Emit(m *types.Message)	// goroutine safe; use channel to implement queue
+	Emit(m *types.Message)	// should be goroutine safe
 }

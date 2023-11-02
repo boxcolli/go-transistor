@@ -9,7 +9,7 @@ type channelStreamReader struct {
 	ch <-chan *types.Message
 }
 
-func NewChannelStreamReader(ch <-chan *types.Message) io.StreamReader {
+func NewChannelReader(ch <-chan *types.Message) io.StreamReader {
 	return &channelStreamReader{
 		ch: ch,
 	}

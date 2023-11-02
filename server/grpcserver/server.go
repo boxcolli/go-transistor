@@ -2,8 +2,7 @@ package server
 
 import (
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
-	"github.com/boxcolli/go-transistor/base"
-	"github.com/boxcolli/go-transistor/collector"
+	"github.com/boxcolli/go-transistor/core"
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
 	"github.com/boxcolli/go-transistor/io/reader/grpcreader"
 	"github.com/boxcolli/go-transistor/io/writer/grpcwriter"
@@ -16,14 +15,13 @@ type grpcServer struct {
 
 	qsiz int
 
-	c collector.Collector
-	b base.Base
+	c core.Core
 }
 
 // Publish implements pb.TransistorServiceServer.
 func (s *grpcServer) Publish(stream pb.TransistorService_PublishServer) error {
 	sr := grpcreader.NewGrpcServerStream(stream)
-	err := s.c.Work(sr) // Block
+	err := s.c.Collect(sr)
 	return err
 }
 
@@ -42,18 +40,18 @@ func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) erro
 
 		cg := new(types.Change)
 		cg.Unmarshal(req.GetChange())
-		s.b.Apply(e, cg)
+		s.c.Apply(e, cg)
 	} ()
 
 	// Send message
 	go func() {
 		w := grpcwriter.NewGrpcWriter(stream)
-		err := e.Work(w)
+		err := s.c.Emit(e, w)
 		ch <- err
 	} ()
 
 	err := <- ch
-	s.b.Delete(e)
+	s.c.Delete(e)
 	return err
 }
 

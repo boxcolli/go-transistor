@@ -1,109 +1,118 @@
 package basicbase
 
 import (
-	"fmt"
+	"log"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/boxcolli/go-transistor/base"
+	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
-	"github.com/boxcolli/go-transistor/io/writer/channel"
+	"github.com/boxcolli/go-transistor/index/routeindex"
+	"github.com/boxcolli/go-transistor/io"
+	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
 	"github.com/boxcolli/go-transistor/types"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestBasicBase(t *testing.T) {
-	fmt.Println("start test")
+const (
+	qsiz = 10
+	csiz = 10
+)
 
-	// base
-	base := NewBasicBase(10)
-	go base.Start()
-
-	// Emitter
-	ch1 := make(chan *types.Message)
-	writer1 := channel.NewChannelStreamWriter(ch1)
-	emitter1 := basicemitter.NewBasicEmitter(1024)
-	go emitter1.Work(writer1)
-	go printChan(ch1, "emitter #1")
-
-	ch2 := make(chan *types.Message)
-	writer2 := channel.NewChannelStreamWriter(ch2)
-	emitter2 := basicemitter.NewBasicEmitter(1024)
-	go emitter2.Work(writer2)
-	go printChan(ch2, "emitter #2")
-
-	// test
-	base.Apply(emitter1, &types.Change{
-		Op: types.OperationAdd,
-		Topics: []types.Topic{
-			[]string{"KOR", "SEOUL", "1001"},
-			[]string{"KOR", "INCHEON", "1002"},
-			[]string{"USA", "LA", "1003"},
-		},
-	})
-	base.Apply(emitter2, &types.Change{
-		Op: types.OperationAdd,
-		Topics: []types.Topic{
-			[]string{"KOR", "SEOUL", "1001"},
-			[]string{"USA", "LA"},
-		},
-	})
-	base.Apply(emitter1, &types.Change{
-		Op: types.OperationDel,
-		Topics: []types.Topic{
-			[]string{"KOR", "SEOUL", "1001"},
-			[]string{"USA", "LA"},
-		},
-	})
-	base.Apply(emitter2, &types.Change{
-		Op: types.OperationDel,
-		Topics: []types.Topic{
-			[]string{},
-		},
-	})
-
-	go sendMsg(base)
-
-	for {
-	}
+var cs = []chan *types.Message {
+	make(chan *types.Message, csiz),
+	make(chan *types.Message, csiz),
 }
 
-func sendMsg(b base.Base) {
-	for {
-		time.Sleep(time.Second * 2)
-		fmt.Printf("sended --------\n")
+var ws = []io.StreamWriter{
+	channelwriter.NewChannelWriter(cs[0]),
+	channelwriter.NewChannelWriter(cs[1]),
+}
 
-		b.Flow(&types.Message{
-			Topic:  []string{"KOR", "INCHEON", "1002"},
-			Method: types.MethodCreate,
-			Data:   "1",
-			TP:     time.Now(),
-		})
-		b.Flow(&types.Message{
-			Topic:  []string{"USA"},
-			Method: types.MethodCreate,
-			Data:   "2",
-			TP:     time.Now(),
-		})
-		b.Flow(&types.Message{
-			Topic:  []string{"USA", "LA"},
-			Method: types.MethodCreate,
-			Data:   "3",
-			TP:     time.Now(),
-		})
-		b.Flow(&types.Message{
-			Topic:  []string{"USA", "LA", "1003"},
-			Method: types.MethodCreate,
-			Data:   "4",
-			TP:     time.Now(),
-		})
+var es = []emitter.Emitter{
+	basicemitter.NewBasicEmitter(qsiz),
+	basicemitter.NewBasicEmitter(qsiz),
+}
+
+// var ms = []*types.Message{
+// 	{ Topic: types.EmptyTopic },
+// 	{ Topic: types.Topic{"A0"} },
+// 	{ Topic: types.Topic{"A0", "B0"} },
+// }
+
+func TestBasicBase(t *testing.T) {
+	log.Println("start test")
+
+	go printChan(cs[0], "e0")
+	go printChan(cs[1], "e1")
+
+	// Start emitter
+	wg := sync.WaitGroup{}
+	{
+		for i := 0; i < len(es); i++ {
+			// work emitter
+			wg.Add(1)
+			go func(i int, e emitter.Emitter, w io.StreamWriter) {
+				log.Printf("emitter[%d] working\n", i)
+				e.Work(w)
+				log.Printf("emitter[%d] done\n", i)
+				wg.Done()
+			} (i, es[i], ws[i])
+		}
 	}
+
+	// Schedule stop
+	stop := make(chan bool)
+	go func () {
+		<- stop
+		time.Sleep(3 * time.Second)
+		for i := 0; i < len(es); i++ {
+			es[i].Stop()
+		}
+	} ()
+
+	// base
+	base := NewBasicBase(routeindex.NewRouteIndex, qsiz)
+	base.Start()
+
+	// test
+	for _, cg := range cgs1 {
+		base.Apply(es[0], cg)
+	}
+	for _, cg := range cgs2 {
+		base.Apply(es[1], cg)
+	}
+	for _, cg := range cgs3 {
+		base.Apply(es[0], cg)
+	}
+	for _, cg := range cgs4 {
+		base.Apply(es[1], cg)
+	}
+
+	for i := 0; i < 10; i++ {
+		time.Sleep(time.Second * 2)
+		sendMsgOnce(base)
+	}
+
+	// close(stop)
+	// wg.Wait()
+
+	// assert.Equal(t, 4, len(cs[0]))
+	assert.Equal(t, 0, len(cs[1]))
+}
+
+func sendMsgOnce(b base.Base) {
+	for _, m := range ms {
+		b.Flow(m)
+	}
+	log.Printf("sended --------\n")
 }
 
 func printChan(ch <-chan *types.Message, title string) {
 	for {
-		select {
-		case m := <-ch:
-			fmt.Printf("%s : %s\n", title, m.Data)
-		}
+		m := <-ch
+		log.Printf("%s : %s\n", title, m.Data)
 	}
 }

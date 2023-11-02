@@ -1,4 +1,4 @@
-package channel
+package channelwriter
 
 import (
 	"github.com/boxcolli/go-transistor/io"
@@ -6,7 +6,7 @@ import (
 )
 
 type channelStreamWriter struct {
-	ch chan<- *types.Message
+	ch	chan<- *types.Message
 }
 
 func (w *channelStreamWriter) Write(m *types.Message) error {
@@ -14,7 +14,7 @@ func (w *channelStreamWriter) Write(m *types.Message) error {
 	return nil
 }
 
-func NewChannelStreamWriter(ch chan<- *types.Message) io.StreamWriter {
+func NewChannelWriter(ch chan<- *types.Message) io.StreamWriter {
 	return &channelStreamWriter{
 		ch: ch,
 	}

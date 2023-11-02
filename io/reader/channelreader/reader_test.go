@@ -15,7 +15,7 @@ var ms = []*types.Message{
 
 func TestChannelStreamReader(t *testing.T) {
 	ch := make(chan *types.Message, 10)
-	sr := NewChannelStreamReader(ch)
+	sr := NewChannelReader(ch)
 
 	go func(ms []*types.Message) {
 		for _, v := range ms {
