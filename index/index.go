@@ -5,21 +5,25 @@ import (
 	"github.com/boxcolli/go-transistor/types"
 )
 
+type Entry interface {
+	emitter.Emitter
+}
+
 type Index interface {
 	Flow(m *types.Message)
-	Add(e emitter.Emitter, t types.Topic) bool	// returns validity
-	Del(e emitter.Emitter, t types.Topic) bool	// returns validity
+	Add(e Entry, t types.Topic) bool	// returns validity
+	Del(e Entry, t types.Topic) bool	// returns validity
 }
 
 type Inode struct {
 	P		*Inode	// parent node
-	Eset	map[emitter.Emitter]bool
+	Eset	map[Entry]bool
 	Next 	map[string]*Inode
 }
 func NewInode(P *Inode) *Inode {
 	return &Inode{
 		P,
-		make(map[emitter.Emitter]bool),
+		make(map[Entry]bool),
 		make(map[string]*Inode),
 	}
 }

@@ -12,8 +12,8 @@ type Core interface {
 
 	// Block functions
 	Collect(io.StreamReader) error
-	Emit(emitter.Emitter, io.StreamWriter) error
+	// Emit(emitter.Emitter, io.StreamWriter) error // further implementation
 	Apply(emitter.Emitter, *types.Change)
 	Delete(emitter.Emitter)
-	Command(args []string) chan string
+	Command(args []string) <-chan string
 }

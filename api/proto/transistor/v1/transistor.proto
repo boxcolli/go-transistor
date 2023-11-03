@@ -42,8 +42,9 @@ enum Operation {
 }
 
 message Change {
-    Operation op = 1;
-    Topic topic = 2;
+    Mode mode = 1;
+    Operation op = 2;
+    Topic topic = 3;
 }
 
 service TransistorService {

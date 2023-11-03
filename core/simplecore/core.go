@@ -12,11 +12,10 @@ import (
 type Component struct {
 	Collector collector.Collector
 	Base      base.Base
-	Emitter   emitter.Emitter
 }
 
 type Option struct {
-	StaticTopics []types.Topic
+	// StaticTopics []types.Topic
 }
 
 type simpleCore struct {
@@ -33,7 +32,7 @@ func NewSimpleCore(com Component, opt Option) core.Core {
 
 // Start implements core.Core.
 func (c *simpleCore) Start() {
-	panic("unimplemented")
+	c.com.Base.Start()
 }
 
 // Apply implements core.Core.
@@ -47,16 +46,11 @@ func (c *simpleCore) Collect(r io.StreamReader) error {
 }
 
 // Command implements core.Core.
-func (c *simpleCore) Command(args []string) chan string {
-	panic("unimplemented")
+func (c *simpleCore) Command(args []string) <-chan string {
+	return c.command(args)
 }
 
 // Delete implements core.Core.
 func (c *simpleCore) Delete(e emitter.Emitter) {
 	c.com.Base.Delete(e)
-}
-
-// Emit implements core.Core.
-func (c *simpleCore) Emit(emitter.Emitter, io.StreamWriter) error {
-	
 }

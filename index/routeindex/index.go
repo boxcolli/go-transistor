@@ -1,14 +1,13 @@
 package routeindex
 
 import (
-	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/index"
 	"github.com/boxcolli/go-transistor/types"
 )
 
 type routeIndex struct {
 	i	*index.Inode
-	v	map[emitter.Emitter](*index.Vnode)
+	v	map[index.Entry](*index.Vnode)
 }
 
 // Flow implements index.Index.
@@ -28,12 +27,12 @@ func (I *routeIndex) Flow(m *types.Message) {
 func NewRouteIndex() index.Index {
 	return &routeIndex{
 		i:	index.NewInode(nil),
-		v:	make(map[emitter.Emitter]*index.Vnode),
+		v:	make(map[index.Entry]*index.Vnode),
 	}
 }
 
 // Add implements index.Index.
-func (I *routeIndex) Add(e emitter.Emitter, t types.Topic) bool {
+func (I *routeIndex) Add(e index.Entry, t types.Topic) bool {
 	var (
 		i *index.Inode = I.i
 		v *index.Vnode
@@ -87,7 +86,7 @@ func (I *routeIndex) Add(e emitter.Emitter, t types.Topic) bool {
 	return iappend || vappend
 }
 
-func appendAndGetInext(i *index.Inode, e emitter.Emitter, t string) *index.Inode {
+func appendAndGetInext(i *index.Inode, e index.Entry, t string) *index.Inode {
 	// i.Eset[e] = true
 	inext := index.NewInode(i)
 	inext.Eset[e] = true
@@ -102,7 +101,7 @@ func appendAndGetVnext(v *index.Vnode, inext *index.Inode, t string) *index.Vnod
 }
 
 // Del implements index.Index.
-func (I *routeIndex) Del(e emitter.Emitter, topic types.Topic) bool {
+func (I *routeIndex) Del(e index.Entry, topic types.Topic) bool {
 	var (
 		v *index.Vnode
 	)
@@ -146,7 +145,7 @@ func (I *routeIndex) Del(e emitter.Emitter, topic types.Topic) bool {
 	return true
 }
 
-func tearup(v *index.Vnode, e emitter.Emitter, topic types.Topic, x int) *index.Vnode {
+func tearup(v *index.Vnode, e index.Entry, topic types.Topic, x int) *index.Vnode {
 	pv := v.P
 	if pv == nil {
 		delete(v.Pair.Eset, e)
@@ -166,11 +165,11 @@ func tearup(v *index.Vnode, e emitter.Emitter, topic types.Topic, x int) *index.
 }
 
 // Erase subtree of v
-func teardown(v *index.Vnode, e emitter.Emitter) {
+func teardown(v *index.Vnode, e index.Entry) {
 	_teardown(v, e, "")
 }
 
-func _teardown(v *index.Vnode, e emitter.Emitter, myKey string) {
+func _teardown(v *index.Vnode, e index.Entry, myKey string) {
 	if !v.Empty() {
 		for key, vnext := range v.Next {
 			_teardown(vnext, e, key)

@@ -4,17 +4,16 @@ import (
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/types"
-	"google.golang.org/grpc"
 )
 
 type clientStreamReader struct {
-	c pb.TransistorService_SubscribeClient
+	stream pb.TransistorService_SubscribeClient
 }
 
 // Read implements StreamReader.
 func (r *clientStreamReader) Read() (*types.Message, error) {
 	// Pull new message
-	res, err := r.c.Recv()
+	res, err := r.stream.Recv()
 	if err != nil {
 		return nil, err
 	}
@@ -25,18 +24,28 @@ func (r *clientStreamReader) Read() (*types.Message, error) {
 	return m, nil
 }
 
-func NewGrpcClientStream(c pb.TransistorService_SubscribeClient) io.StreamReader {
-	return &clientStreamReader{ c: c }
+func NewGrpcClientStream(stream pb.TransistorService_SubscribeClient) io.StreamReader {
+	return &clientStreamReader{ stream: stream }
 }
 
 type serverStreamReader struct {
+	stream pb.TransistorService_PublishServer
 }
 
 // Read implements StreamReader.
-func (*serverStreamReader) Read() (*types.Message, error) {
-	panic("unimplemented")
+func (r *serverStreamReader) Read() (*types.Message, error) {
+	// Pull new message
+	res,err := r.stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the message
+	m := new(types.Message)
+	m.Unmarshal(res.GetMsg())
+	return m, nil
 }
 
-func NewGrpcServerStream(stream grpc.ServerStream) io.StreamReader {
-	return &serverStreamReader{}
+func NewGrpcServerStream(stream pb.TransistorService_PublishServer) io.StreamReader {
+	return &serverStreamReader{ stream: stream }
 }

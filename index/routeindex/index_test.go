@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
 	"github.com/boxcolli/go-transistor/index"
 	"github.com/boxcolli/go-transistor/io"
@@ -23,7 +22,7 @@ const (
 )
 
 type pair struct {
-	e	emitter.Emitter
+	e	index.Entry
 	t	types.Topic
 }
 
@@ -54,7 +53,7 @@ var ws = []io.StreamWriter{
 	channelwriter.NewChannelWriter(cs[2]),
 }
 
-var es = []emitter.Emitter{
+var es = []index.Entry{
 	ps[0].e,
 	ps[1].e,
 	ps[2].e,
@@ -73,7 +72,7 @@ func TestFlow(t *testing.T) {
 		for i := 0; i < len(es); i++ {
 			// work emitter
 			wg.Add(1)
-			go func(i int, e emitter.Emitter, w io.StreamWriter) {
+			go func(i int, e index.Entry, w io.StreamWriter) {
 				log.Printf("emitter[%d] working\n", i)
 				e.Work(w)
 				log.Printf("emitter[%d] done\n", i)
@@ -187,7 +186,7 @@ func _printInode(i *index.Inode, token string, step int) {
 		_printInode(next, token, step + 1)
 	}
 }
-func printV(V map[emitter.Emitter]*index.Vnode) {
+func printV(V map[index.Entry]*index.Vnode) {
 	fmt.Printf("V\n")
 	for e, v := range V {
 		fmt.Printf("- [%v]\n", &e)
@@ -207,6 +206,6 @@ func _printV(v *index.Vnode, token string, step int) {
 func newRouteIndex() *routeIndex {
 	return &routeIndex{
 		i: index.NewInode(nil),
-		v:	make(map[emitter.Emitter]*index.Vnode),
+		v:	make(map[index.Entry]*index.Vnode),
 	}
 }

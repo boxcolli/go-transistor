@@ -11,12 +11,14 @@ func NewChange(op Operation, t Topic) *Change {
 	return &Change{ op, t }
 }
 
-func (m *Change) Marshal() *pb.Change {
+func (c *Change) Marshal() *pb.Change {
 	return &pb.Change{
-		
+		Op: c.Op.ToBuf(),
+		Topic: &pb.Topic{ Tokens: c.Topic },
 	}
 }
 
-func (m *Change) Unmarshal(msg *pb.Change) {
-
+func (c *Change) Unmarshal(cg *pb.Change) {
+	c.Op.FromBuf(cg.Op)
+	c.Topic = cg.Topic.GetTokens()
 }

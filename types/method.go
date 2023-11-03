@@ -14,31 +14,36 @@ const (
 
 func (m Method) ToBuf() pb.Method {
 	switch m {
-	case MethodEmpty:
-		return pb.Method_METHOD_EMPTY
-	case MethodCreate:
-		return pb.Method_METHOD_CREATE
-	case MethodUpdate:
-		return pb.Method_METHOD_UPDATE
-	case MethodDelete:
-		return pb.Method_METHOD_DELETE
-	default:
-		return pb.Method_METHOD_UNSPECIFIED
+	case MethodEmpty:	return pb.Method_METHOD_EMPTY
+	case MethodCreate:	return pb.Method_METHOD_CREATE
+	case MethodUpdate:	return pb.Method_METHOD_UPDATE
+	case MethodDelete:	return pb.Method_METHOD_DELETE
+	default:			return pb.Method_METHOD_UNSPECIFIED
 	}
 }
 
-func (m Method) ToPb(p pb.Method) {
+func (m *Method) FromBuf(p pb.Method) {
 	switch p {
 	case pb.Method_METHOD_EMPTY:
-		m = MethodEmpty
+		*m = MethodEmpty
 		//return MethodEmpty
 	case pb.Method_METHOD_CREATE:
-		m = MethodCreate
+		*m = MethodCreate
 	case pb.Method_METHOD_UPDATE:
-		m = MethodUpdate
+		*m = MethodUpdate
 	case pb.Method_METHOD_DELETE:
-		m = MethodDelete
+		*m = MethodDelete
 	default:
-		m = MethodUnspecified
+		*m = MethodUnspecified
+	}
+}
+
+func (m Method) String() string {
+	switch m {
+	case MethodEmpty:	return "Empty"
+	case MethodCreate:	return "Create"
+	case MethodUpdate:	return "Update"
+	case MethodDelete:	return "Delete"
+	default:			return "Unspecified"
 	}
 }

@@ -1,6 +1,7 @@
 package basicbase
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -62,6 +63,7 @@ func (b *basicBase) start() {
 	go b.asyncLock(try, get, stop)
 
 	if len(b.tq) != 0 {
+		// resolve dirty index copy first
 		stopped := b.dirty(try, get, stop)
 		if stopped {
 			return
@@ -75,14 +77,17 @@ func (b *basicBase) start() {
 		
 		case t := <- b.tch:
 			
+			// Try to apply
 			if b.runTask(t) {
 				b.tq = append(b.tq, t)
 			} else {
-				continue
+				continue	// the request was not valid
 			}
 
+			// Begin lock
 			try <- true
 
+			// 
 			stopped := b.dirty(try, get, stop)
 			if stopped {
 				return
@@ -152,14 +157,16 @@ func (b *basicBase) Stop() {
 
 	b.stop <- true
 	b.started = false
-	b.wg.Wait()
+	b.wg.Wait()			// blocking function; wait for graceful stop
 }
 
 // Flow implements base.Base.
 func (b *basicBase) Flow(m *types.Message) {
 	b.imx.RLock()
+	defer b.imx.RUnlock()
+	
+	fmt.Printf("base received: %v\n", *m)
 	b.i.Flow(m)
-	b.imx.RUnlock()
 }
 
 // Apply implements base.Base.
