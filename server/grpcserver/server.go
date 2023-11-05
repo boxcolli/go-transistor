@@ -21,7 +21,7 @@ var (
 type grpcServer struct {
 	pb.UnimplementedTransistorServiceServer
 
-	eqs int
+	eqs int	// emitter queue size
 
 	c core.Core
 }
@@ -45,6 +45,7 @@ func (s *grpcServer) Publish(stream pb.TransistorService_PublishServer) error {
 // Subscribe implements pb.TransistorServiceServer.
 func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) error {
 	e := basicemitter.NewBasicEmitter(s.eqs)
+	defer s.c.Delete(e)
 	ch := make(chan error)
 
 	// Receive at least one change
@@ -80,7 +81,7 @@ func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) erro
 	} ()
 
 	err := <- ch
-	s.c.Delete(e)
+	
 	return err
 }
 

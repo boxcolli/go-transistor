@@ -1,7 +1,6 @@
 package basiccollector
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -82,7 +81,7 @@ func (c *basicCollector) Work(r io.StreamReader) error {
 
 		case m := <- ent.m:
 			// New message
-			fmt.Printf("collector received: %v\n", *m)
+			// fmt.Printf("collector received: %v\n", *m)
 			c.b.Flow(m)
 
 		case err := <- ent.e:

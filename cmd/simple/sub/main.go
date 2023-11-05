@@ -25,6 +25,11 @@ func main() {
 		ff.WithEnvVars(),
 	)
 
+
+	// PubSub
+	
+
+
 	// Client
 	var client pb.TransistorServiceClient
 	{
@@ -63,6 +68,8 @@ func main() {
 				log.Fatalf("Subscribe() received error: %v\n", err)
 				break
 			}
+
+			
 
 			msg := new(types.Message)
 			msg.Unmarshal(res.GetMsg())

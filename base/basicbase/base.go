@@ -1,7 +1,6 @@
 package basicbase
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
@@ -165,7 +164,7 @@ func (b *basicBase) Flow(m *types.Message) {
 	b.imx.RLock()
 	defer b.imx.RUnlock()
 	
-	fmt.Printf("base received: %v\n", *m)
+	// fmt.Printf("base received: %v\n", *m)
 	b.i.Flow(m)
 }
 
