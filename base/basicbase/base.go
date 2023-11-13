@@ -113,6 +113,7 @@ func (b *basicBase) dirty(try chan bool, get chan bool, stop chan bool) bool {
 			for _, t := range b.tq {
 				b.runTask(t)
 			}
+			b.tq = make([]*task, 0)
 			return false
 
 		case t := <- b.tch:

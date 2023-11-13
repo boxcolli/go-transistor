@@ -12,6 +12,7 @@ import (
 	"github.com/boxcolli/go-transistor/types"
 	"github.com/peterbourgon/ff/v4"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	fs := flag.NewFlagSet("myprogram", flag.ContinueOnError)
 	var (
 		addr = fs.String("addr", ":443", "listen address")
-		to = fs.Duration("to", 100 * time.Second, "grpc request timeout")
+		to = fs.Duration("to", 1000 * time.Second, "grpc request timeout")
 		rate = fs.Duration("rate", 1 * time.Second, "message publish rate")
 	)
 	ff.Parse(fs, os.Args[1:],
@@ -62,8 +63,14 @@ func main() {
 					Data: []byte(fmt.Sprintf("%v", iteration)),
 					TP: time.Now().UTC(),
 				}
+
+				mar := msg.Marshal()
+				{
+					b, _ := proto.Marshal(mar)
+					fmt.Printf("message size: %d\n", len(b))
+				}
 	
-				err := stream.Send(&pb.PublishRequest{ Msg: msg.Marshal() })
+				err := stream.Send(&pb.PublishRequest{ Msg: mar })
 				if err != nil {
 					log.Fatalf("stream failed: %v\n", err)
 					break

@@ -64,8 +64,8 @@ func (I *routeIndex) Add(e index.Entry, t types.Topic) bool {
 			v = appendAndGetVnext(v, i, seg)
 			continue
 		}
-		i.Eset[e] = true
 		i = inext	// Move i
+		i.Eset[e] = true
 
 		if vappend {
 			// Append and move v

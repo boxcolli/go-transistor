@@ -18,18 +18,15 @@ func main() {
 	fs := flag.NewFlagSet("myprogram", flag.ContinueOnError)
 	var (
 		addr = fs.String("addr", ":443", "listen address")
-		to = fs.Duration("to", 10 * time.Second, "grpc request timeout")
+		to = fs.Duration("to", 1000 * time.Second, "grpc request timeout")
 		st = fs.String("st", "A0", "static 1st level topic for subscription")
 	)
 	ff.Parse(fs, os.Args[1:],
 		ff.WithEnvVars(),
 	)
-
-
+	
 	// PubSub
 	
-
-
 	// Client
 	var client pb.TransistorServiceClient
 	{

@@ -58,6 +58,7 @@ func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) erro
 		cg := new(types.Change)
 		cg.Unmarshal(req.GetChange())
 		s.c.Apply(e, cg)
+		fmt.Printf("Applied initial change\n")
 	}
 
 	// Listen change
