@@ -1,20 +1,29 @@
 package simplecore
 
-const (
-	ping = "ping"
+import (
+	"context"
+	"errors"
 )
 
-func (c *simpleCore) command(args []string) <-chan string {
+const (
+	CmdPing = "ping"
+)
+
+var (
+	ErrNotFound = errors.New("the command doesn't exist")
+)
+
+func (c *simpleCore) command(ctx context.Context, args []string) (<-chan string, error) {
 	switch args[0] {
-	case ping:	return c.ping(args)
-	default:	return nil
+	case CmdPing:		return c.cmdPing(ctx, args)
+	default:			return nil, ErrNotFound
 	}
 }
 
-func (c *simpleCore) ping(args []string) <-chan string {
+func (c *simpleCore) cmdPing(ctx context.Context, args []string) (<-chan string, error) {
 	ch := make(chan string, 1)
+	defer close(ch)
 
 	ch <- "pong"
-	defer close(ch)
-	return ch
+	return ch, nil
 }

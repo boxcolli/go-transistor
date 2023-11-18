@@ -1,6 +1,8 @@
 package simplecore
 
 import (
+	"context"
+
 	"github.com/boxcolli/go-transistor/base"
 	"github.com/boxcolli/go-transistor/collector"
 	"github.com/boxcolli/go-transistor/core"
@@ -10,12 +12,12 @@ import (
 )
 
 type Component struct {
-	Collector collector.Collector
-	Base      base.Base
+	Collector 	collector.Collector
+	Base      	base.Base
+	Emitter		emitter.Emitter
 }
 
 type Option struct {
-	// StaticTopics []types.Topic
 }
 
 type simpleCore struct {
@@ -23,34 +25,31 @@ type simpleCore struct {
 	opt Option
 }
 
-func NewSimpleCore(com Component, opt Option) core.Core {
+func NewsimpleCore(com Component, opt Option) core.Core {
 	return &simpleCore{
 		com: com,
 		opt: opt,
 	}
 }
 
-// Start implements core.Core.
-func (c *simpleCore) Start() {
-	c.com.Base.Start()
-}
-
-// Apply implements core.Core.
-func (c *simpleCore) Apply(e emitter.Emitter, cg *types.Change) {
-	c.com.Base.Apply(e, cg)
-}
-
-// Collect implements core.Core.
 func (c *simpleCore) Collect(r io.StreamReader) error {
-	return c.com.Collector.Work(r)
+	return c.com.Collector.Work(c.com.Base, r)
+}
+func (c *simpleCore) Emit(w io.StreamWriter) error {
+	c.com.Emitter.Bus(w)
+	return c.com.Emitter.Work(w)
 }
 
-// Command implements core.Core.
-func (c *simpleCore) Command(args []string) <-chan string {
-	return c.command(args)
+func (c *simpleCore) Apply(w io.StreamWriter, cg *types.Change) {
+	bus, _ := c.com.Emitter.Bus(w)
+	c.com.Base.Apply(bus, cg)
+}
+func (c *simpleCore) Delete(w io.StreamWriter) {
+	bus, _ := c.com.Emitter.Bus(w)
+	c.com.Base.Delete(bus)
+	c.com.Emitter.Stop(w)
 }
 
-// Delete implements core.Core.
-func (c *simpleCore) Delete(e emitter.Emitter) {
-	c.com.Base.Delete(e)
+func (c *simpleCore) Command(ctx context.Context, args []string) (<-chan string, error) {
+	return c.command(ctx, args)
 }

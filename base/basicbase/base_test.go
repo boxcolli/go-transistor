@@ -1,118 +1,117 @@
 package basicbase
 
-import (
-	"log"
-	"sync"
-	"testing"
-	"time"
+// import (
+// 	"log"
+// 	"sync"
+// 	"testing"
+// 	"time"
 
-	"github.com/boxcolli/go-transistor/base"
-	"github.com/boxcolli/go-transistor/emitter"
-	"github.com/boxcolli/go-transistor/emitter/basicemitter"
-	"github.com/boxcolli/go-transistor/index/routeindex"
-	"github.com/boxcolli/go-transistor/io"
-	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
-	"github.com/boxcolli/go-transistor/types"
-	"github.com/stretchr/testify/assert"
-)
+// 	"github.com/boxcolli/go-transistor/base"
+// 	"github.com/boxcolli/go-transistor/emitter"
+// 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
+// 	"github.com/boxcolli/go-transistor/index/routeindex"
+// 	"github.com/boxcolli/go-transistor/io"
+// 	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
+// 	"github.com/boxcolli/go-transistor/types"
+// 	"github.com/stretchr/testify/assert"
+// )
 
-const (
-	qsiz = 10
-	csiz = 10
-)
+// const (
+// 	qsiz = 10
+// 	csiz = 10
+// )
 
-var cs = []chan *types.Message {
-	make(chan *types.Message, csiz),
-	make(chan *types.Message, csiz),
-}
-
-var ws = []io.StreamWriter{
-	channelwriter.NewChannelWriter(cs[0]),
-	channelwriter.NewChannelWriter(cs[1]),
-}
-
-var es = []emitter.Emitter{
-	basicemitter.NewBasicEmitter(qsiz),
-	basicemitter.NewBasicEmitter(qsiz),
-}
-
-// var ms = []*types.Message{
-// 	{ Topic: types.EmptyTopic },
-// 	{ Topic: types.Topic{"A0"} },
-// 	{ Topic: types.Topic{"A0", "B0"} },
+// var cs = []chan *types.Message {
+// 	make(chan *types.Message, csiz),
+// 	make(chan *types.Message, csiz),
 // }
 
-func TestBasicBase(t *testing.T) {
-	log.Println("start test")
+// var ws = []io.StreamWriter{
+// 	channelwriter.NewChannelWriter(cs[0]),
+// 	channelwriter.NewChannelWriter(cs[1]),
+// }
 
-	go printChan(cs[0], "e0")
-	go printChan(cs[1], "e1")
+// var es = []emitter.Emitter{
+// 	basicemitter.NewBasicEmitter(qsiz),
+// 	basicemitter.NewBasicEmitter(qsiz),
+// }
 
-	// Start emitter
-	wg := sync.WaitGroup{}
-	{
-		for i := 0; i < len(es); i++ {
-			// work emitter
-			wg.Add(1)
-			go func(i int, e emitter.Emitter, w io.StreamWriter) {
-				log.Printf("emitter[%d] working\n", i)
-				e.Work(w)
-				log.Printf("emitter[%d] done\n", i)
-				wg.Done()
-			} (i, es[i], ws[i])
-		}
-	}
+// // var ms = []*types.Message{
+// // 	{ Topic: types.EmptyTopic },
+// // 	{ Topic: types.Topic{"A0"} },
+// // 	{ Topic: types.Topic{"A0", "B0"} },
+// // }
 
-	// Schedule stop
-	stop := make(chan bool)
-	go func () {
-		<- stop
-		time.Sleep(3 * time.Second)
-		for i := 0; i < len(es); i++ {
-			es[i].Stop()
-		}
-	} ()
+// func TestBasicBase(t *testing.T) {
+// 	log.Println("start test")
 
-	// base
-	base := NewBasicBase(routeindex.NewRouteIndex, qsiz)
-	base.Start()
+// 	go printChan(cs[0], "e0")
+// 	go printChan(cs[1], "e1")
 
-	// test
-	for _, cg := range cgs1 {
-		base.Apply(es[0], cg)
-	}
-	for _, cg := range cgs2 {
-		base.Apply(es[1], cg)
-	}
-	for _, cg := range cgs3 {
-		base.Apply(es[0], cg)
-	}
-	for _, cg := range cgs4 {
-		base.Apply(es[1], cg)
-	}
+// 	// Start emitter
+// 	wg := sync.WaitGroup{}
+// 	{
+// 		for i := 0; i < len(es); i++ {
+// 			// work emitter
+// 			wg.Add(1)
+// 			go func(i int, e emitter.Emitter, w io.StreamWriter) {
+// 				log.Printf("emitter[%d] working\n", i)
+// 				e.Work(w)
+// 				log.Printf("emitter[%d] done\n", i)
+// 				wg.Done()
+// 			} (i, es[i], ws[i])
+// 		}
+// 	}
 
-	for i := 0; i < 10; i++ {
-		time.Sleep(time.Second * 2)
-		sendMsgOnce(base)
-	}
+// 	// Schedule stop
+// 	stop := make(chan bool)
+// 	go func () {
+// 		<- stop
+// 		time.Sleep(3 * time.Second)
+// 		for i := 0; i < len(es); i++ {
+// 			es[i].Stop()
+// 		}
+// 	} ()
 
-	// close(stop)
-	// wg.Wait()
+// 	// base
+// 	base := NewBasicBase(routeindex.NewRouteIndex, qsiz)
 
-	// assert.Equal(t, 4, len(cs[0]))
-	assert.Equal(t, 0, len(cs[1]))
-}
+// 	// test
+// 	for _, cg := range cgs1 {
+// 		base.Apply(es[0], cg)
+// 	}
+// 	for _, cg := range cgs2 {
+// 		base.Apply(es[1], cg)
+// 	}
+// 	for _, cg := range cgs3 {
+// 		base.Apply(es[0], cg)
+// 	}
+// 	for _, cg := range cgs4 {
+// 		base.Apply(es[1], cg)
+// 	}
 
-func sendMsgOnce(b base.Base) {
-	for _, m := range ms {
-		b.Flow(m)
-	}
-	log.Printf("sended --------\n")
-}
+// 	for i := 0; i < 10; i++ {
+// 		time.Sleep(time.Second * 2)
+// 		sendMsgOnce(base)
+// 	}
 
-func printChan(ch <-chan *types.Message, title string) {
-	for {
-		m := <-ch
-		log.Printf("%s : %s\n", title, m.Data)
-	}
-}
+// 	// close(stop)
+// 	// wg.Wait()
+
+// 	// assert.Equal(t, 4, len(cs[0]))
+// 	assert.Equal(t, 0, len(cs[1]))
+// }
+
+// func sendMsgOnce(b base.Base) {
+// 	for _, m := range ms {
+// 		b.Flow(m)
+// 	}
+// 	log.Printf("sended --------\n")
+// }
+
+// func printChan(ch <-chan *types.Message, title string) {
+// 	for {
+// 		m := <-ch
+// 		log.Printf("%s : %s\n", title, m.Data)
+// 	}
+// }

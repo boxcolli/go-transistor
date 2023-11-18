@@ -1,12 +1,11 @@
 package index
 
 import (
-	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/types"
 )
 
 type Entry interface {
-	emitter.Emitter
+	Push(m *types.Message)
 }
 
 type Index interface {
@@ -16,13 +15,13 @@ type Index interface {
 }
 
 type Inode struct {
-	P		*Inode	// parent node
+	Prev	*Inode	// parent node
 	Eset	map[Entry]bool
 	Next 	map[string]*Inode
 }
-func NewInode(P *Inode) *Inode {
+func NewInode(prev *Inode) *Inode {
 	return &Inode{
-		P,
+		prev,
 		make(map[Entry]bool),
 		make(map[string]*Inode),
 	}
@@ -32,18 +31,18 @@ func (n Inode) Empty() bool {
 }
 func (n *Inode) Emit(m *types.Message) {
 	for e := range n.Eset {
-		e.Emit(m)
+		e.Push(m)
 	}
 }
 
 type Vnode struct {
-	P		*Vnode
+	Prev	*Vnode
 	Pair	*Inode
 	Next	map[string]*Vnode
 }
-func NewVnode(P *Vnode, pair *Inode) *Vnode {
+func NewVnode(prev *Vnode, pair *Inode) *Vnode {
 	return &Vnode{
-		P,
+		prev,
 		pair,
 		make(map[string]*Vnode),
 	}

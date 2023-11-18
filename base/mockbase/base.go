@@ -16,7 +16,6 @@ type mockBase struct {
 	invmx	sync.Mutex
 }
 
-// Apply implements base.Base.
 func (b *mockBase) Apply(e emitter.Emitter, cg *types.Change) {
 	var me int
 	{
@@ -38,7 +37,6 @@ func (b *mockBase) Apply(e emitter.Emitter, cg *types.Change) {
 	}
 }
 
-// Delete implements base.Base.
 func (b *mockBase) Delete(e emitter.Emitter) {
 	var me int
 	{
@@ -59,7 +57,6 @@ func (b *mockBase) Delete(e emitter.Emitter) {
 	}
 }
 
-// Flow implements base.Base.
 func (b *mockBase) Flow(m *types.Message) {
 	b.emx.RLock()
 	defer b.emx.RUnlock()
@@ -69,12 +66,10 @@ func (b *mockBase) Flow(m *types.Message) {
 	}
 }
 
-// Start implements base.Base.
 func (b *mockBase) Start() {
 	//
 }
 
-// Stop implements base.Base.
 func (b *mockBase) Stop() {
 	//
 }

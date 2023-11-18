@@ -4,14 +4,13 @@ import (
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
-	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/index"
 	"github.com/boxcolli/go-transistor/types"
 )
 
 type task struct {
-	e  emitter.Emitter
-	cg *types.Change
+	e	index.Entry
+	cg	*types.Change
 }
 
 type basicBase struct {
@@ -19,62 +18,29 @@ type basicBase struct {
 	icopy	index.Index
 	imx 	sync.RWMutex
 
-	started	bool
-	stop	chan bool
 	tch 	chan *task
 	tq		[]*task
-	wg		sync.WaitGroup
-	mx		sync.Mutex
 }
 
 func NewBasicBase(buildIndex func() index.Index, msgQueueSize int) base.Base {
-	return &basicBase{
+	b := &basicBase{
 		i:		buildIndex(),
 		icopy:	buildIndex(),
 		imx:	sync.RWMutex{},
 
-		started:	false,
-		stop:	make(chan bool),
 		tch:	make(chan *task, msgQueueSize),
 		tq:		make([]*task, 0),
-		wg:		sync.WaitGroup{},
-		mx:		sync.Mutex{},
 	}
-}
-
-// Start implements base.Base.
-func (b *basicBase) Start() {
-	b.mx.Lock()
-	defer b.mx.Unlock()
-
-	if b.started {
-		return
-	}
-
-	b.wg.Add(1)
-	go b.start()
+	b.start()
+	return b
 }
 
 func (b *basicBase) start() {
-	defer b.wg.Done()
-
 	try, get, stop := make(chan bool, 1), make(chan bool), make(chan bool, 1)
 	go b.asyncLock(try, get, stop)
 
-	if len(b.tq) != 0 {
-		// resolve dirty index copy first
-		stopped := b.dirty(try, get, stop)
-		if stopped {
-			return
-		}
-	}
-
 	for {
-		select {
-		case <- b.stop:
-			return
-		
-		case t := <- b.tch:
+		t := <- b.tch
 			
 			// Try to apply
 			if b.runTask(t) {
@@ -91,7 +57,6 @@ func (b *basicBase) start() {
 			if stopped {
 				return
 			}
-		}
 	}
 }
 
@@ -99,10 +64,6 @@ func (b *basicBase) dirty(try chan bool, get chan bool, stop chan bool) bool {
 	// The icopy is in dirty state
 	for {
 		select {
-		case <- b.stop:
-			stop <- true
-			return true
-
 		case <- get:
 
 			// swap index
@@ -150,16 +111,6 @@ func (b *basicBase) runTask(t *task) bool {
 	return false
 }
 
-// Stop implements base.Base.
-func (b *basicBase) Stop() {
-	b.mx.Lock()
-	defer b.mx.Unlock()
-
-	b.stop <- true
-	b.started = false
-	b.wg.Wait()			// blocking function; wait for graceful stop
-}
-
 // Flow implements base.Base.
 func (b *basicBase) Flow(m *types.Message) {
 	b.imx.RLock()
@@ -170,12 +121,12 @@ func (b *basicBase) Flow(m *types.Message) {
 }
 
 // Apply implements base.Base.
-func (b *basicBase) Apply(e emitter.Emitter, cg *types.Change) {
+func (b *basicBase) Apply(e index.Entry, cg *types.Change) {
 	b.tch <- &task{ e, cg }
 }
 
 // Delete implements base.Base.
-func (b *basicBase) Delete(e emitter.Emitter) {
+func (b *basicBase) Delete(e index.Entry) {
 	b.tch <- &task{ e, &types.Change{
 		Op: types.OperationDel,
 		Topic: types.EmptyTopic,

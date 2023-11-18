@@ -1,4 +1,4 @@
-package main
+package mock
 
 import "google.golang.org/grpc"
 

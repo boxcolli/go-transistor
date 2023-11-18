@@ -23,16 +23,13 @@ func newEntry(msiz int) *entry {
 }
 
 type basicCollector struct {
-	b	base.Base
-
 	mqs	int
 	ent	map[io.StreamReader]*entry
 	mx  sync.Mutex
 }
 
-func NewBasicCollector(b base.Base, msgQueueSize int) collector.Collector {
+func NewBasicCollector(msgQueueSize int) collector.Collector {
 	return &basicCollector{
-		b:		b,
 		mqs:	msgQueueSize,
 		ent:	make(map[io.StreamReader]*entry),
 		mx:		sync.Mutex{},
@@ -40,7 +37,7 @@ func NewBasicCollector(b base.Base, msgQueueSize int) collector.Collector {
 }
 
 // Work implements collector.Collector.
-func (c *basicCollector) Work(r io.StreamReader) error {
+func (c *basicCollector) Work(b base.Base, r io.StreamReader) error {
 	ent := newEntry(c.mqs)
 	{
 		c.mx.Lock()
@@ -82,7 +79,7 @@ func (c *basicCollector) Work(r io.StreamReader) error {
 		case m := <- ent.m:
 			// New message
 			// fmt.Printf("collector received: %v\n", *m)
-			c.b.Flow(m)
+			b.Flow(m)
 
 		case err := <- ent.e:
 			// There is a problem with stream reader
@@ -91,7 +88,6 @@ func (c *basicCollector) Work(r io.StreamReader) error {
 	}
 }
 
-// Stop implements collector.Collector.
 func (c *basicCollector) Stop(r io.StreamReader) {
 	c.mx.Lock()
 	defer c.mx.Unlock()
@@ -100,7 +96,6 @@ func (c *basicCollector) Stop(r io.StreamReader) {
 	delete(c.ent, r)
 }
 
-// StopAll implements collector.Collector.
 func (c *basicCollector) StopAll() {
 	//delete all
 	c.mx.Lock()

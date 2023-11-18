@@ -1,19 +1,19 @@
 package core
 
 import (
-	"github.com/boxcolli/go-transistor/emitter"
+	"context"
+
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/types"
 )
 
 // A core is a builder and also a CLI engine
 type Core interface {
-	Start()
+	Collect(r io.StreamReader) error			// Block function
+	Emit(w io.StreamWriter) error				// Block function
+	
+	Apply(w io.StreamWriter, cg *types.Change)
+	Delete(w io.StreamWriter)
 
-	// Block functions
-	Collect(io.StreamReader) error
-	// Emit(emitter.Emitter, io.StreamWriter) error // further implementation
-	Apply(emitter.Emitter, *types.Change)
-	Delete(emitter.Emitter)
-	Command(args []string) <-chan string
+	Command(ctx context.Context, args []string) (<-chan string, error)
 }
