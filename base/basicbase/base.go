@@ -22,16 +22,16 @@ type basicBase struct {
 	tq		[]*task
 }
 
-func NewBasicBase(buildIndex func() index.Index, msgQueueSize int) base.Base {
+func NewBasicBase(buildIndex func() index.Index, cqs int) base.Base {
 	b := &basicBase{
 		i:		buildIndex(),
 		icopy:	buildIndex(),
 		imx:	sync.RWMutex{},
 
-		tch:	make(chan *task, msgQueueSize),
+		tch:	make(chan *task, cqs),
 		tq:		make([]*task, 0),
 	}
-	b.start()
+	go b.start()
 	return b
 }
 

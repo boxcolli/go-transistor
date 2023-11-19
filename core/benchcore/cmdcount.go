@@ -1,4 +1,4 @@
-package basiccore
+package benchcore
 
 import (
 	"flag"
@@ -10,7 +10,8 @@ import (
 	"github.com/boxcolli/go-transistor/tools"
 )
 
-func (c *basicCore) cmdCount(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchCore) cmdCount(ctx context.Context, args []string) (<-chan string, error) {
+	if len(args) == 0 { return nil, ErrNotFound }
 	switch args[0] {
 	case CmdCountMod:	return c.cmdCountMod(ctx, args[1:])
 	case CmdCountRate: 	return c.cmdCountRate(ctx, args[1:])
@@ -18,18 +19,17 @@ func (c *basicCore) cmdCount(ctx context.Context, args []string) (<-chan string,
 	}
 }
 
-func (c *basicCore) cmdCountMod(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchCore) cmdCountMod(ctx context.Context, args []string) (<-chan string, error) {
 	// Parse args
-	fs := flag.NewFlagSet("mod", flag.ContinueOnError)
+	fmt.Println("cmdCountMod(): args:", args)
+	fs := flag.NewFlagSet("count", flag.ContinueOnError)
 	var (
-		forTime	= flag.Duration("for", time.Second * 10, "total count duration")
-		mod		= flag.Int64("mod", 1000000, "make an intermediate report if count % mod == 0")
+		forTime	= fs.Duration("for", time.Second * 10, "total count duration")
+		mod		= fs.Int64("mod", 1000000, "make an intermediate report if count % mod == 0")
 	)
 	{
 		err := fs.Parse(args)
-		if err != nil {
-			return nil, ErrInvalidArgument
-		}
+		if err != nil { return nil, ErrInvalidArgument }
 	}
 
 	var (
@@ -50,6 +50,8 @@ func (c *basicCore) cmdCountMod(ctx context.Context, args []string) (<-chan stri
 		defer close(out)
 		defer c.mid.Del(mw)
 
+		out <- "mod, count, elapsed"
+
 		c.mid.Add(mw)
 		timer.Set()
 		start := time.Now()
@@ -59,15 +61,15 @@ func (c *basicCore) cmdCountMod(ctx context.Context, args []string) (<-chan stri
 				return
 
 			case <- end:
-				now := time.Now()
-				out <- fmt.Sprintf("mod, %s, %.1f\n", count.String(), now.Sub(start).Seconds())
-				out <- fmt.Sprintf("end, %s\n", count.Quo(now.Sub(start).Seconds()).Text('f', 1))
+				elapsedSec := time.Since(start).Seconds()
+				out <- fmt.Sprintf("mod, %s, %.1f", count.String(), elapsedSec)
+				out <- fmt.Sprintf("end, ms/s, %s\n", count.Quo(elapsedSec).Text('f', 1))
 				return
 
 			case <- in:
 				count.AddOne()
 				if count.IsModZero() {
-					out <- fmt.Sprintf("mod, %s, %.1f\n", count.String(), time.Since(start).Seconds())
+					out <- fmt.Sprintf("mod, %s, %.1f", count.String(), time.Since(start).Seconds())
 				}
 			}
 		}
@@ -76,12 +78,12 @@ func (c *basicCore) cmdCountMod(ctx context.Context, args []string) (<-chan stri
 	return out, nil
 }
 
-func (c *basicCore) cmdCountRate(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchCore) cmdCountRate(ctx context.Context, args []string) (<-chan string, error) {
 	// Parse args
 	fs := flag.NewFlagSet("rate", flag.ContinueOnError)
 	var (
-		forTime	= flag.Duration("for", time.Second * 10, "watch count duration for")
-		rate		= flag.Duration("rate", time.Second * 1, "report rate")
+		forTime	= fs.Duration("for", time.Second * 10, "watch count duration for")
+		rate	= fs.Duration("rate", time.Second * 1, "report rate")
 	)
 	{
 		err := fs.Parse(args)
@@ -109,6 +111,8 @@ func (c *basicCore) cmdCountRate(ctx context.Context, args []string) (<-chan str
 		defer close(out)
 		defer c.mid.Del(mw)
 
+		out <- "rate, count, ms/s"
+
 		c.mid.Add(mw)
 		endTimer.Set()
 		rateTimer.Set()
@@ -121,7 +125,7 @@ func (c *basicCore) cmdCountRate(ctx context.Context, args []string) (<-chan str
 			case <- end:
 				elapsedSec := time.Since(start).Seconds()
 				out <- fmt.Sprintf("rate, %s, %.1f\n", count.String(), elapsedSec)
-				out <- fmt.Sprintf("end, %s\n", count.Quo(elapsedSec).Text('f', 1))
+				out <- fmt.Sprintf("end, ms/s, %s\n", count.Quo(elapsedSec).Text('f', 1))
 				return
 
 			case <- rate:

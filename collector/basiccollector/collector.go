@@ -23,20 +23,19 @@ func newEntry(msiz int) *entry {
 }
 
 type basicCollector struct {
-	mqs	int
+	mqs	int	// message queue size
 	ent	map[io.StreamReader]*entry
 	mx  sync.Mutex
 }
 
-func NewBasicCollector(msgQueueSize int) collector.Collector {
+func NewBasicCollector(mqs int) collector.Collector {
 	return &basicCollector{
-		mqs:	msgQueueSize,
+		mqs:	mqs,
 		ent:	make(map[io.StreamReader]*entry),
 		mx:		sync.Mutex{},
 	}
 }
 
-// Work implements collector.Collector.
 func (c *basicCollector) Work(b base.Base, r io.StreamReader) error {
 	ent := newEntry(c.mqs)
 	{

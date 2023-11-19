@@ -3,9 +3,9 @@ package tools
 import "math/big"
 
 var (
-	IntOne = big.NewInt(1)
-	IntZero = big.NewInt(0)
-	FloatOne = big.NewFloat(1)
+	intOne = big.NewInt(1)
+	intZero = big.NewInt(0)
+	floatOne = big.NewFloat(1)
 )
 
 type Counter struct {
@@ -26,8 +26,8 @@ func (c *Counter) Reset() {
 	c.F = big.NewFloat(0)
 }
 func (c *Counter) AddOne() {
-	c.I.Add(c.I, IntOne)
-	c.F.Add(c.F, FloatOne)
+	c.I.Add(c.I, intOne)
+	c.F.Add(c.F, floatOne)
 }
 func (c *Counter) Add(x int64) {
 	c.I.Add(c.I, big.NewInt(x))
@@ -38,7 +38,7 @@ func (c *Counter) Quo(x float64) *big.Float {
 	return d.Quo(c.F, d)
 }
 func (c *Counter) IsModZero() bool {
-	return big.NewInt(0).Mod(c.I, c.Mod).Cmp(IntZero) == 0
+	return big.NewInt(0).Mod(c.I, c.Mod).Cmp(intZero) == 0
 }
 func (c *Counter) String() string {
 	return c.I.String()

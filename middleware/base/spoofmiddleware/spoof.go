@@ -18,7 +18,7 @@ type spoofMiddleware struct {
 	mx	sync.Mutex
 }
 
-func NewCountMiddlware(ch chan<- *types.Message) SpoofMiddleware {
+func NewSpoofMiddlware(ch chan<- *types.Message) SpoofMiddleware {
 	return &spoofMiddleware{
 		ch: ch,
 	}

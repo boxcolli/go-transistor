@@ -1,4 +1,4 @@
-package server
+package grpcserver
 
 import (
 	"sync"
@@ -40,8 +40,8 @@ func (s *grpcServer) Publish(stream pb.TransistorService_PublishServer) error {
 func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) error {
 	w := grpcwriter.NewGrpcWriter(stream)
 	{
-		s.core.Emit(w)
-		defer s.core.Delete(w)
+		go s.core.Emit(w)
+		defer s.core.Stop(w)
 	}
 
 	// Receive at least one change

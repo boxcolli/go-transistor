@@ -28,25 +28,6 @@ type basicEmitter struct {
 	mx  sync.RWMutex
 }
 
-// Enter implements emitter.Emitter.
-func (e *basicEmitter) Bus(w io.StreamWriter) (io.Bus, bool) {
-	e.mx.Lock()
-	defer e.mx.Unlock()
-	
-	if ent, ok := e.ent[w]; ok {
-
-		// entry already exists
-		return ent.bus, false
-
-	} else {
-
-		// create new entry
-		ent = newEntry(e.mqs)
-		e.ent[w] = ent
-		return ent.bus, true
-
-	}
-}
 
 func NewBasicEmitter(mqs int) emitter.Emitter {
 	return &basicEmitter{
@@ -56,23 +37,24 @@ func NewBasicEmitter(mqs int) emitter.Emitter {
 	}
 }
 
-func (e *basicEmitter) lookupEntry(w io.StreamWriter) *entry {
-	e.mx.RLock()
-	defer e.mx.RUnlock()
-
-	if ent, ok := e.ent[w]; !ok {
-		return nil
-	} else {
-		ent.wg.Add(1)	// increase the wait group here because the Mutex is locked
-		return ent
-	}
-}
-
 func (e *basicEmitter) Work(w io.StreamWriter) error {
-	ent := e.lookupEntry(w)
-	if ent == nil { return nil }
-	defer ent.wg.Done()
+	// Get entry
+	var ent *entry
+	{
+		var ok bool
+		e.mx.Lock()
+		if ent, ok = e.ent[w]; !ok {
+	
+			ent = newEntry(e.mqs)
+			e.ent[w] = ent
 
+		}
+		ent.wg.Add(1)
+		e.mx.Unlock()
+		defer ent.wg.Done()
+	}
+
+	// Work
 	pull := ent.bus.Pull()
 	for {
 		select {
@@ -96,6 +78,16 @@ func (e *basicEmitter) Work(w io.StreamWriter) error {
 			if err != nil { return err }
 
 		}
+	}
+}
+
+func (e *basicEmitter) Bus(w io.StreamWriter) (io.Bus, bool) {
+	e.mx.RLock()
+	defer e.mx.RUnlock()
+	if ent, ok := e.ent[w]; ok {
+		return ent.bus, true
+	} else {
+		return nil, false
 	}
 }
 
