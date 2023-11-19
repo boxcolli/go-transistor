@@ -68,8 +68,8 @@ func (c *benchCore) cmdBench(ctx context.Context, args []string) (<-chan string,
 				rateTimer.Set()
 				out <- fmt.Sprintf(
 					"bench, %s, %s",
-					count.Quo(rateSec).Text('g', 1),
-					sum.Quo(rateSec).Text('g', 1),
+					count.Quo(rateSec).Text('f', -1),
+					sum.Quo(rateSec).Text('f', -1),
 				)
 				count.Reset()
 				sum.Reset()

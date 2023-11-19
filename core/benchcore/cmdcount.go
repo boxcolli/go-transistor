@@ -63,7 +63,7 @@ func (c *benchCore) cmdCountMod(ctx context.Context, args []string) (<-chan stri
 			case <- end:
 				elapsedSec := time.Since(start).Seconds()
 				out <- fmt.Sprintf("mod, %s, %.1f", count.String(), elapsedSec)
-				out <- fmt.Sprintf("end, ms/s, %s\n", count.Quo(elapsedSec).Text('f', 1))
+				out <- fmt.Sprintf("end, ms/s, %s\n", count.Quo(elapsedSec).Text('f', -1))
 				return
 
 			case <- in:

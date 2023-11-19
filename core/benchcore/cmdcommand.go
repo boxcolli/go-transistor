@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"flag"
+	"fmt"
 
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/tools"
@@ -41,6 +42,7 @@ func (c *benchCore) cmdCommand(ctx context.Context, args []string) (<-chan strin
 		client, conn, err = tools.NewClient(*addr, opts)
 		if err != nil { return nil, ErrUnavailable }
 		defer conn.Close()
+		fmt.Println("connected to", *addr)
 	}
 
 	var stream pb.TransistorService_CommandClient
