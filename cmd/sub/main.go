@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
-	"time"
 
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/types"
@@ -18,15 +18,12 @@ func main() {
 	fs := flag.NewFlagSet("myprogram", flag.ContinueOnError)
 	var (
 		addr = fs.String("addr", ":443", "listen address")
-		to = fs.Duration("to", 1000 * time.Second, "grpc request timeout")
 		st = fs.String("st", "A0", "static 1st level topic for subscription")
 	)
 	ff.Parse(fs, os.Args[1:],
 		ff.WithEnvVars(),
 	)
-	
-	// PubSub
-	
+
 	// Client
 	var client pb.TransistorServiceClient
 	{
@@ -36,21 +33,18 @@ func main() {
 		}
 		defer conn.Close()
 		client = pb.NewTransistorServiceClient(conn)
+		fmt.Println("connected")
 	}
 
 	// Subscribe
 	{
 		var opts = []grpc.CallOption{}
-		ctx, cancel := contextWithTimeout(*to)
-		go func () {
-			time.Sleep(*to)
-			cancel()
-		} ()
-		stream, err := client.Subscribe(ctx, opts...)
+		stream, err := client.Subscribe(context.Background(), opts...)
 		if err != nil {
 			panic(err)
 		}
 
+		// Send initial change
 		cg := types.Change{ Op: types.OperationAdd, Topic: types.Topic{*st} }
 		err = stream.Send(&pb.SubscribeRequest{
 			Change: cg.Marshal(),
@@ -59,6 +53,7 @@ func main() {
 			panic(err)
 		}
 
+		fmt.Println("now listening..")
 		for {
 			res, err := stream.Recv()
 			if err != nil {
@@ -66,15 +61,9 @@ func main() {
 				break
 			}
 
-			
-
 			msg := new(types.Message)
 			msg.Unmarshal(res.GetMsg())
 			log.Printf("Subscribe() receivd: %s\n", msg.String())
 		}
 	}
-}
-
-func contextWithTimeout(to time.Duration) (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), to)
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/boxcolli/go-transistor/io"
-	"github.com/boxcolli/go-transistor/types"
 )
 
 var (
@@ -14,6 +13,7 @@ var (
 // Emitter receives new messages and emits through outlet.
 type Emitter interface {
 	Work(w io.StreamWriter) error
-	Stop()
-	Emit(m *types.Message)	// should be goroutine safe
+	Bus(w io.StreamWriter) (io.Bus, bool)
+	Stop(w io.StreamWriter)
+	StopAll()
 }

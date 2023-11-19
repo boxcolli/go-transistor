@@ -10,6 +10,7 @@ import (
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
 	"github.com/boxcolli/go-transistor/index"
 	"github.com/boxcolli/go-transistor/io"
+	"github.com/boxcolli/go-transistor/io/bus/channelbus"
 	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
 	"github.com/boxcolli/go-transistor/io/writer/slicewriter"
 	"github.com/boxcolli/go-transistor/types"
@@ -28,15 +29,15 @@ type pair struct {
 
 var ps = []pair{
 	{
-		basicemitter.NewBasicEmitter(qsiz),
+		channelbus.NewChannelBus(qsiz),
 		types.EmptyTopic,
 	},
 	{
-		basicemitter.NewBasicEmitter(qsiz),
+		channelbus.NewChannelBus(qsiz),
 		types.Topic{"A0"},
 	},
 	{
-		basicemitter.NewBasicEmitter(qsiz),
+		channelbus.NewChannelBus(qsiz),
 		types.Topic{"A0", "B0"},
 	},
 }

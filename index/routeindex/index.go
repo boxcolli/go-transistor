@@ -146,7 +146,7 @@ func (I *routeIndex) Del(e index.Entry, topic types.Topic) bool {
 }
 
 func tearup(v *index.Vnode, e index.Entry, topic types.Topic, x int) *index.Vnode {
-	pv := v.P
+	pv := v.Prev
 	if pv == nil {
 		delete(v.Pair.Eset, e)
 		return v
@@ -176,7 +176,7 @@ func _teardown(v *index.Vnode, e index.Entry, myKey string) {
 		}
 	}
 
-	pv := v.P
+	pv := v.Prev
 	if pv == nil {
 		delete(v.Pair.Eset, e)
 		return

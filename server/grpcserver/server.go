@@ -1,15 +1,15 @@
-package server
+package grpcserver
 
 import (
-	"fmt"
+	"sync"
 
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/core"
-	"github.com/boxcolli/go-transistor/emitter/basicemitter"
 	"github.com/boxcolli/go-transistor/io/reader/grpcreader"
 	"github.com/boxcolli/go-transistor/io/writer/grpcwriter"
 	"github.com/boxcolli/go-transistor/server"
 	"github.com/boxcolli/go-transistor/types"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,34 +19,30 @@ var (
 )
 
 type grpcServer struct {
+	core core.Core
+
 	pb.UnimplementedTransistorServiceServer
-
-	eqs int	// emitter queue size
-
-	c core.Core
 }
 
-func NewTransistorServer(c core.Core, emitterQueueSiz int) server.Server {
+func NewGrpcServer(core core.Core) server.Server {
+	zerolog.New(zerolog.NewConsoleWriter())
 	return &grpcServer{
-		c: c,
-		eqs: emitterQueueSiz,
+		core: core,
 	}
 }
 
-// Publish implements pb.TransistorServiceServer.
 func (s *grpcServer) Publish(stream pb.TransistorService_PublishServer) error {
-	fmt.Printf("Begin\n")
 	r := grpcreader.NewGrpcServerStream(stream)
-	fmt.Printf("New grpc server stream: %v\n", r)
-	err := s.c.Collect(r)
+	err := s.core.Collect(r)
 	return err
 }
 
-// Subscribe implements pb.TransistorServiceServer.
 func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) error {
-	e := basicemitter.NewBasicEmitter(s.eqs)
-	defer s.c.Delete(e)
-	ch := make(chan error)
+	w := grpcwriter.NewGrpcWriter(stream)
+	{
+		go s.core.Emit(w)
+		defer s.core.Stop(w)
+	}
 
 	// Receive at least one change
 	{
@@ -57,61 +53,56 @@ func (s *grpcServer) Subscribe(stream pb.TransistorService_SubscribeServer) erro
 
 		cg := new(types.Change)
 		cg.Unmarshal(req.GetChange())
-		s.c.Apply(e, cg)
-		fmt.Printf("Applied initial change\n")
+		s.core.Apply(w, cg)
 	}
 
 	// Listen change
+	ch := make(chan error, 2)
 	go func() {
-		req, err := stream.Recv()
-		if err != nil {
-			ch <- err
-			return
+		for {
+			req, err := stream.Recv()
+			if err != nil {
+				ch <- err
+				return
+			}
+	
+			cg := new(types.Change)
+			cg.Unmarshal(req.GetChange())
+			s.core.Apply(w, cg)
 		}
-
-		cg := new(types.Change)
-		cg.Unmarshal(req.GetChange())
-		s.c.Apply(e, cg)
 	} ()
 
 	// Send message
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		w := grpcwriter.NewGrpcWriter(stream)
-		err := e.Work(w)
+		err := s.core.Emit(w)	// block
 		ch <- err
 	} ()
 
-	err := <- ch
-	
-	return err
+	<- ch	// block
+	wg.Wait()
+	return nil
 }
 
-// Command implements pb.TransistorServiceServer.
 func (s *grpcServer) Command(req *pb.CommandRequest, stream pb.TransistorService_CommandServer) error {
 	// Command
-	ch := s.c.Command(req.GetArgs())
-
-	// Check at least one response
-	success := false
+	ch, err := s.core.Command(stream.Context(), req.GetArgs())
+	if err != nil {
+		return ErrInternal
+	}
 
 	// Receive lines
 	for {
 		line, ok := <- ch
-		if !ok {
-			break	// finished
-		}
-
-		success = true
+		if !ok { break }	// finished
 
 		// Send response line
 		err := stream.Send(&pb.CommandResponse{ Line: line })
-		if err != nil {
-			return err
-		}
+		if err != nil { return err }
 	}
 
-	if !success {
-		return ErrInternal
-	}
 	return nil
 }
