@@ -28,7 +28,6 @@ type basicEmitter struct {
 	mx  sync.RWMutex
 }
 
-
 func NewBasicEmitter(mqs int) emitter.Emitter {
 	return &basicEmitter{
 		mqs: mqs,
