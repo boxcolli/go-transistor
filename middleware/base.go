@@ -38,7 +38,13 @@ func (mw *baseMiddleware) Del(b base.Base) {
 	defer mw.mx.Unlock()
 	delete(mw.base, b)
 }
-
+func (mw *baseMiddleware) Flow(m *types.Message) {
+	mw.mx.RLock()
+	defer mw.mx.RUnlock()
+	for base := range mw.base {
+		base.Flow(m)
+	}
+}
 func (mw *baseMiddleware) Apply(e index.Entry, cg *types.Change) {
 	mw.mx.RLock()
 	defer mw.mx.RUnlock()
@@ -51,12 +57,5 @@ func (mw *baseMiddleware) Delete(e index.Entry) {
 	defer mw.mx.RUnlock()
 	for base := range mw.base {
 		base.Delete(e)
-	}
-}
-func (mw *baseMiddleware) Flow(m *types.Message) {
-	mw.mx.RLock()
-	defer mw.mx.RUnlock()
-	for base := range mw.base {
-		base.Flow(m)
 	}
 }
