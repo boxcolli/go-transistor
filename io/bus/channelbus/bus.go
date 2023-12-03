@@ -9,18 +9,20 @@ import (
 
 type channelBus struct {
 	ch chan *types.Message
-	mx sync.Mutex
+	ok bool	// status availability
+	mx sync.RWMutex
 }
 
 func NewChannelBus(qs int) io.Bus {
 	return &channelBus{
 		ch: make(chan *types.Message, qs),
-		mx: sync.Mutex{},
+		mx: sync.RWMutex{},
 	}
 }
 func (b *channelBus) Push(m *types.Message) {
-	if ok := b.mx.TryLock(); !ok { return }	// this bus is turned off
-	defer b.mx.Unlock()
+	b.mx.RLock()
+	defer b.mx.RUnlock()
+	if !b.ok { return }	// this bus is turned off
 	b.ch <- m
 }
 func (b *channelBus) Pull() <-chan *types.Message {
@@ -28,7 +30,11 @@ func (b *channelBus) Pull() <-chan *types.Message {
 }
 func (b *channelBus) Lock() {
 	b.mx.Lock()
+	defer b.mx.Unlock()
+	b.ok = false
 }
 func (b *channelBus) Unlock() {
-	b.mx.Unlock()
+	b.mx.Lock()
+	defer b.mx.Unlock()
+	b.ok = true
 }
