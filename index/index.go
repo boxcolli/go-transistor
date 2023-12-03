@@ -16,12 +16,14 @@ type Index interface {
 
 type Inode struct {
 	Prev	*Inode	// parent node
+	Token	string
 	Eset	map[Entry]bool
 	Next 	map[string]*Inode
 }
-func NewInode(prev *Inode) *Inode {
+func NewInode(prev *Inode, token string) *Inode {
 	return &Inode{
 		prev,
+		token,
 		make(map[Entry]bool),
 		make(map[string]*Inode),
 	}
@@ -29,7 +31,7 @@ func NewInode(prev *Inode) *Inode {
 func (n Inode) Empty() bool {
 	return len(n.Eset) == 0 && len(n.Next) == 0
 }
-func (n *Inode) Emit(m *types.Message) {
+func (n *Inode) Push(m *types.Message) {
 	for e := range n.Eset {
 		e.Push(m)
 	}
@@ -37,12 +39,14 @@ func (n *Inode) Emit(m *types.Message) {
 
 type Vnode struct {
 	Prev	*Vnode
+	Token	string
 	Pair	*Inode
 	Next	map[string]*Vnode
 }
-func NewVnode(prev *Vnode, pair *Inode) *Vnode {
+func NewVnode(prev *Vnode, token string, pair *Inode) *Vnode {
 	return &Vnode{
 		prev,
+		token,
 		pair,
 		make(map[string]*Vnode),
 	}
