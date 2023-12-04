@@ -18,7 +18,6 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/peterbourgon/ff/v4"
 	"google.golang.org/grpc"
-
 )
 
 func main() {
