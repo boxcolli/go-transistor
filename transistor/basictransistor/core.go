@@ -1,11 +1,11 @@
-package basiccore
+package basictransistor
 
 import (
 	"context"
 
 	"github.com/boxcolli/go-transistor/base"
 	"github.com/boxcolli/go-transistor/collector"
-	"github.com/boxcolli/go-transistor/core"
+	"github.com/boxcolli/go-transistor/transistor"
 	"github.com/boxcolli/go-transistor/emitter"
 	"github.com/boxcolli/go-transistor/io"
 	"github.com/boxcolli/go-transistor/middleware"
@@ -21,44 +21,44 @@ type Component struct {
 type Option struct {
 }
 
-type basicCore struct {
+type basicTransistor struct {
 	com Component
 	opt Option
 	mid middleware.BaseMiddleware
 }
 
-func NewBasicCore(com Component, opt Option) core.Core {
-	return &basicCore{
+func NewBasicCore(com Component, opt Option) transistor.Transistor {
+	return &basicTransistor{
 		com: com,
 		opt: opt,
 		mid: middleware.NewBaseMiddleware(com.Base),
 	}
 }
 
-func (c *basicCore) Collect(r io.StreamReader) error {
+func (c *basicTransistor) Collect(r io.StreamReader) error {
 	return c.com.Collector.Work(c.mid, r)
 }
-func (c *basicCore) Emit(w io.StreamWriter) error {
+func (c *basicTransistor) Emit(w io.StreamWriter) error {
 	return c.com.Emitter.Work(w)
 }
-func (c *basicCore) Apply(w io.StreamWriter, cg *types.Change) error {
+func (c *basicTransistor) Apply(w io.StreamWriter, cg *types.Change) error {
 	if bus, ok := c.com.Emitter.Bus(w); ok {
 		c.mid.Apply(bus, cg)
 		return nil
 	} else {
-		return core.ErrNotFound
+		return transistor.ErrNotFound
 	}
 }
-func (c *basicCore) Stop(w io.StreamWriter) error {
+func (c *basicTransistor) Stop(w io.StreamWriter) error {
 	if bus, ok := c.com.Emitter.Bus(w); ok {
 		bus.Lock()
 		c.mid.Delete(bus)
 		c.com.Emitter.Stop(w)
 		return nil
 	} else {
-		return core.ErrNotFound
+		return transistor.ErrNotFound
 	}
 }
-func (c *basicCore) Command(ctx context.Context, args []string) (<-chan string, error) {
+func (c *basicTransistor) Command(ctx context.Context, args []string) (<-chan string, error) {
 	return c.command(ctx, args)
 }

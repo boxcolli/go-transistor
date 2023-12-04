@@ -1,4 +1,4 @@
-package benchcore
+package benchtransistor
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func (c *benchCore) cmdCommand(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdCommand(ctx context.Context, args []string) (<-chan string, error) {
 	fs := flag.NewFlagSet("command", flag.ContinueOnError)
 	var (
 		withTls = fs.Bool("tls", false, "grpc secure option")

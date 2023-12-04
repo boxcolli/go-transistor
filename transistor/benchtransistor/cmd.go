@@ -1,4 +1,4 @@
-package benchcore
+package benchtransistor
 
 import (
 	"context"
@@ -21,7 +21,7 @@ var (
 	ErrUnavailable = errors.New("unavailable")
 )
 
-func (c *benchCore) command(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) command(ctx context.Context, args []string) (<-chan string, error) {
 	fmt.Println("Command(): args:", args)
 	if len(args) == 0 { return nil, ErrNotFound }
 	switch args[0] {
@@ -33,7 +33,7 @@ func (c *benchCore) command(ctx context.Context, args []string) (<-chan string, 
 	}
 }
 
-func (c *benchCore) cmdPing(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdPing(ctx context.Context, args []string) (<-chan string, error) {
 	ch := make(chan string, 1)
 	defer close(ch)
 

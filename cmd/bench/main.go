@@ -9,10 +9,10 @@ import (
 	pb "github.com/boxcolli/go-transistor/api/gen/transistor/v1"
 	"github.com/boxcolli/go-transistor/base/basicbase"
 	"github.com/boxcolli/go-transistor/collector/basiccollector"
-	"github.com/boxcolli/go-transistor/core"
-	"github.com/boxcolli/go-transistor/core/benchcore"
+	"github.com/boxcolli/go-transistor/transistor"
+	"github.com/boxcolli/go-transistor/transistor/benchtransistor"
 	"github.com/boxcolli/go-transistor/emitter/basicemitter"
-	"github.com/boxcolli/go-transistor/index/routeindex"
+	"github.com/boxcolli/go-transistor/index/basicindex"
 	"github.com/boxcolli/go-transistor/server/grpcserver"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/peterbourgon/ff/v4"
@@ -33,17 +33,17 @@ func main() {
 	)
 
 	// Transistor
-	var Core core.Core
+	var tr transistor.Transistor
 	{
-		Core = benchcore.NewBenchCore(
-			core.Component{
-				Base: basicbase.NewBasicBase(routeindex.NewRouteIndex, *bcqs),
+		tr = benchtransistor.NewBenchTransistor(
+			transistor.Component{
+				Base: basicbase.NewBasicBase(basicindex.NewBasicIndex, *bcqs),
 				Collector: basiccollector.NewBasicCollector(*cmqs),
 				Emitter: basicemitter.NewBasicEmitter(*emqs),
 			},
-			benchcore.Option{},
+			benchtransistor.Option{},
 		)
-		fmt.Println("core started.")
+		fmt.Println("tr started.")
 	}
 
 	// Server
@@ -60,7 +60,7 @@ func main() {
 				logging.StreamServerInterceptor(InterceptorLogger(logger), logOpts...),
 			),
 		)
-		pb.RegisterTransistorServiceServer(grpcServer, grpcserver.NewGrpcServer(Core))
+		pb.RegisterTransistorServiceServer(grpcServer, grpcserver.NewGrpcServer(tr))
 		logger.Printf("server listening at %v", lis.Addr())
 		if err := grpcServer.Serve(lis); err != nil {
 			logger.Fatalf("failed to serve: %v", err)

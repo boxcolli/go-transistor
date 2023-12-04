@@ -1,4 +1,4 @@
-package core
+package transistor
 
 import (
 	"context"
@@ -16,7 +16,7 @@ var (
 )
 
 // A core is a builder and also a CLI engine
-type Core interface {
+type Transistor interface {
 	// Block functions
 	Collect(r io.StreamReader) error
 	Emit(w io.StreamWriter) error

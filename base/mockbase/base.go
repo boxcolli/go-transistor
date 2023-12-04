@@ -5,18 +5,18 @@ import (
 	"sync"
 
 	"github.com/boxcolli/go-transistor/base"
-	"github.com/boxcolli/go-transistor/emitter"
+	"github.com/boxcolli/go-transistor/index"
 	"github.com/boxcolli/go-transistor/types"
 )
 
 type mockBase struct {
-	e		map[int]emitter.Emitter
+	e		map[int]index.Entry
 	emx		sync.RWMutex
-	inv		map[emitter.Emitter]int
+	inv		map[index.Entry]int
 	invmx	sync.Mutex
 }
 
-func (b *mockBase) Apply(e emitter.Emitter, cg *types.Change) {
+func (b *mockBase) Apply(e index.Entry, cg *types.Change) {
 	var me int
 	{
 		b.emx.Lock()
@@ -37,7 +37,7 @@ func (b *mockBase) Apply(e emitter.Emitter, cg *types.Change) {
 	}
 }
 
-func (b *mockBase) Delete(e emitter.Emitter) {
+func (b *mockBase) Delete(e index.Entry) {
 	var me int
 	{
 		var ok bool
@@ -62,7 +62,7 @@ func (b *mockBase) Flow(m *types.Message) {
 	defer b.emx.RUnlock()
 
 	for _, e := range b.e {
-		e.Emit(m)
+		e.Push(m)
 	}
 }
 

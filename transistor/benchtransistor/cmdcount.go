@@ -1,4 +1,4 @@
-package benchcore
+package benchtransistor
 
 import (
 	"flag"
@@ -10,7 +10,7 @@ import (
 	"github.com/boxcolli/go-transistor/tools"
 )
 
-func (c *benchCore) cmdCount(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdCount(ctx context.Context, args []string) (<-chan string, error) {
 	if len(args) == 0 { return nil, ErrNotFound }
 	switch args[0] {
 	case CmdCountMod:	return c.cmdCountMod(ctx, args[1:])
@@ -19,7 +19,7 @@ func (c *benchCore) cmdCount(ctx context.Context, args []string) (<-chan string,
 	}
 }
 
-func (c *benchCore) cmdCountMod(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdCountMod(ctx context.Context, args []string) (<-chan string, error) {
 	// Parse args
 	fmt.Println("cmdCountMod(): args:", args)
 	fs := flag.NewFlagSet("count", flag.ContinueOnError)
@@ -78,7 +78,7 @@ func (c *benchCore) cmdCountMod(ctx context.Context, args []string) (<-chan stri
 	return out, nil
 }
 
-func (c *benchCore) cmdCountRate(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdCountRate(ctx context.Context, args []string) (<-chan string, error) {
 	// Parse args
 	fs := flag.NewFlagSet("rate", flag.ContinueOnError)
 	var (

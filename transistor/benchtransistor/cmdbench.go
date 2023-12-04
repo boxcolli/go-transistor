@@ -1,4 +1,4 @@
-package benchcore
+package benchtransistor
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (c *benchCore) cmdBench(ctx context.Context, args []string) (<-chan string, error) {
+func (c *benchTransistor) cmdBench(ctx context.Context, args []string) (<-chan string, error) {
 	fs := flag.NewFlagSet("bench", flag.ContinueOnError)
 	var (
 		forTime	= fs.Duration("for", time.Second * 10, "watch count duration for")
