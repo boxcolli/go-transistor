@@ -16,6 +16,7 @@ type channelBus struct {
 func NewChannelBus(qs int) io.Bus {
 	return &channelBus{
 		ch: make(chan *types.Message, qs),
+		ok: true,
 		mx: sync.RWMutex{},
 	}
 }

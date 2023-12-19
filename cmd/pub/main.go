@@ -50,7 +50,7 @@ func main() {
 			time.Sleep(*rate)
 
 			msg := types.Message{
-				Topic: types.Topic{"A0"},
+				Topic: types.Topic{"chat"},
 				Mode: types.ModeAny,
 				Method: types.MethodEmpty,
 				Data: []byte(fmt.Sprintf("%v", iteration)),

@@ -1,77 +1,51 @@
 package basicemitter
 
-// import (
-// 	"log"
-// 	"reflect"
-// 	"sync"
-// 	"testing"
-// 	"time"
+import (
+	"testing"
+	"time"
 
-// 	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
-// 	"github.com/boxcolli/go-transistor/types"
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/boxcolli/go-transistor/io/writer/channelwriter"
+	"github.com/boxcolli/go-transistor/types"
+	"github.com/stretchr/testify/assert"
+)
 
-// const (
-// 	qsiz = 10
-// )
+const (
+	qsiz = 10
+)
 
-// var ms = []*types.Message{
-// 	{Topic: types.Topic{"A0"}},
-// 	{Topic: types.Topic{"A1"}},
-// }
+var ms = []*types.Message{
+	{Topic: types.Topic{"A0"}},
+	{Topic: types.Topic{"A1"}},
+}
 
-// func TestBasicEmitter(t *testing.T) {
-// 	e := NewBasicEmitter(qsiz)
-// 	mch := make(chan *types.Message, qsiz)
-// 	w := channelwriter.NewChannelWriter(mch)
+func TestBasicEmitter(t *testing.T) {
+	emitter := NewBasicEmitter(qsiz)
+	messageChannel := make(chan *types.Message, qsiz)
+	streamWriter := channelwriter.NewChannelWriter(messageChannel)
 
-// 	// Emit messages
-// 	for _, m := range ms {
-// 		e.Emit(m)
-// 	}
+	// Work
+	go func() {
+		err := emitter.Work(streamWriter)
+		assert.NoError(t, err)
+	} ()
+	time.Sleep(500 * time.Millisecond)
 
-// 	// Timer
-// 	wg := sync.WaitGroup{}
-// 	wg.Add(1)
-// 	go func() {
-// 		time.Sleep(1 * time.Second)
-// 		e.Stop()
-// 		wg.Done()
-// 	}()
+	bus, ok := emitter.Bus(streamWriter)
+	assert.True(t, ok)
 
-// 	e.Work(w)
+	// Read message
+	go func() {
+		for {
+			m, ok := <- messageChannel
+			assert.True(t, ok)
+			t.Logf("received: %v\n", m)
+		}
+	} ()
 
-// 	// Must receive exact number of messages sent to Emitter.
-// 	for i := 0; i < len(ms); i++ {
-// 		m := <-mch
-// 		assert.Equal(t, true, reflect.DeepEqual(*ms[i], *m))
-// 		log.Println("received:", m)
-// 	}
+	bus.Push(ms[0])
+	time.Sleep(500 * time.Millisecond)
 
-// 	wg.Wait()
-// }
+	bus.Push(ms[1])
+	time.Sleep(1000 * time.Millisecond)
 
-// func TestBasicEmitter2(t *testing.T) {
-// 	e := NewBasicEmitter(qsiz)
-// 	mch := make(chan *types.Message, qsiz)
-// 	w := channelwriter.NewChannelWriter(mch)
-
-// 	// Emit messages
-// 	for _, m := range ms {
-// 		e.Push(m)
-// 	}
-
-// 	// Timer
-// 	wg := sync.WaitGroup{}
-// 	wg.Add(1)
-// 	go func() {
-// 		time.Sleep(1 * time.Second)
-// 		e.Stop()
-// 		wg.Done()
-// 	}()
-
-// 	e.Work(w)
-
-// 	wg.Wait()
-// }
+}
